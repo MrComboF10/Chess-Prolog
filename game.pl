@@ -1,5 +1,8 @@
 :- use_module(library(lists)).
 
+player_color(1, 'white').
+player_color(2, 'black').
+
 % create_row(+N, +Piece, -Row)
 create_row(0, _, []).
 create_row(N, Piece, [Piece|Row]) :-
@@ -44,4 +47,40 @@ initial_board_aux(N, [Row|Board]) :-
 initial_board(Board) :-
     initial_board_aux(0, Board).
 
-    
+initial_state((1, Board)) :-
+    initial_board(Board).
+
+% display_row(+Row)
+display_row([HRow|[]]) :-
+    write(HRow), nl.
+display_row([HRow|TRow]) :-
+    write(HRow), write(' - '),
+    display_row(TRow).
+
+% display_intermediate_row_aux(+N)
+display_intermediate_row_aux(1) :-
+    write('|'), nl.
+display_intermediate_row_aux(N) :-
+    write('|   '),
+    N1 is N - 1,
+    display_intermediate_row_aux(N1).
+
+% display_intermediate_row
+display_intermediate_row :-
+    display_intermediate_row_aux(8).
+
+% display_board(+Board)
+display_board([HBoard|[]]) :-
+    display_row(HBoard).
+display_board([HBoard|TBoard]) :-
+    display_row(HBoard),
+    display_intermediate_row,
+    display_board(TBoard).
+
+display_player(Player) :-
+    player_color(Player, Color),
+    write('Player turn: '), write(Color), nl.
+
+display_game((Player, Board)) :-
+    display_board(Board),
+    display_player(Player).
