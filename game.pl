@@ -1,5 +1,8 @@
 :- use_module(library(lists)).
 
+:-include('utils.pl').
+
+% player_color(?Player, ?Color)
 player_color(1, 'white').
 player_color(2, 'black').
 
@@ -50,12 +53,17 @@ initial_board(Board) :-
 initial_state((1, Board)) :-
     initial_board(Board).
 
-% display_row(+Row)
-display_row([HRow|[]]) :-
+% display_row_aux(+Row)
+display_row_aux([HRow|[]]) :-
     write(HRow), nl.
-display_row([HRow|TRow]) :-
+display_row_aux([HRow|TRow]) :-
     write(HRow), write(' - '),
-    display_row(TRow).
+    display_row_aux(TRow).
+
+% display_row(+N, +Row)
+display_row(N, Row) :-
+    write(N), write('  '),
+    display_row_aux(Row).
 
 % display_intermediate_row_aux(+N)
 display_intermediate_row_aux(1) :-
@@ -67,20 +75,42 @@ display_intermediate_row_aux(N) :-
 
 % display_intermediate_row
 display_intermediate_row :-
+    write('   '),
     display_intermediate_row_aux(8).
 
-% display_board(+Board)
-display_board([HBoard|[]]) :-
-    display_row(HBoard).
-display_board([HBoard|TBoard]) :-
-    display_row(HBoard),
-    display_intermediate_row,
-    display_board(TBoard).
+% dipslay_letters_row
+display_letters_row :-
+    write('   '),
+    write('a   b   c   d   e   f   g   h'), nl.
 
+% display_board_aux(+N, +Board)
+display_board_aux(N, [HBoard|[]]) :-
+    display_row(N, HBoard).
+display_board_aux(N, [HBoard|TBoard]) :-
+    display_row(N, HBoard),
+    display_intermediate_row,
+    N1 is N - 1,
+    display_board_aux(N1, TBoard).
+
+% display_board(+Board)
+display_board(Board) :-
+    display_board_aux(8, Board), nl,
+    display_letters_row, nl.
+
+% display_player(+Player)
 display_player(Player) :-
     player_color(Player, Color),
     write('Player turn: '), write(Color), nl.
 
+% display_game(+GameState)
 display_game((Player, Board)) :-
     display_board(Board),
     display_player(Player).
+
+% player_piece(?Player, +Piece)
+player_piece(1, Piece) :-
+    is_lower_case(Piece).
+player_piece(2, Piece) :-
+    is_upper_case(Piece).
+player_piece(_, _) :-
+    throw('Invalid Arguments!').
