@@ -7,3 +7,7 @@ test_display_board :-
 test_display_game :-
     initial_board(Board),
     display_game((1, Board)).
+
+test_get_piece(PosX, PosY, Piece) :-
+    initial_state(GameState),
+    get_piece(GameState, PosX, PosY, Piece).

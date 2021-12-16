@@ -1,7 +1,5 @@
 :- use_module(library(lists)).
 
-:-include('utils.pl').
-
 % player_color(?Player, ?Color)
 player_color(1, 'white').
 player_color(2, 'black').
@@ -108,9 +106,22 @@ display_game((Player, Board)) :-
     display_player(Player).
 
 % player_piece(?Player, +Piece)
-player_piece(1, Piece) :-
-    is_lower_case(Piece).
-player_piece(2, Piece) :-
-    is_upper_case(Piece).
-player_piece(_, _) :-
-    throw('Invalid Arguments!').
+player_piece(1, 'p').
+player_piece(1, 'r').
+player_piece(1, 'h').
+player_piece(1, 'b').
+player_piece(1, 'q').
+player_piece(1, 'k').
+player_piece(2, 'P').
+player_piece(2, 'R').
+player_piece(2, 'H').
+player_piece(2, 'B').
+player_piece(2, 'Q').
+player_piece(2, 'K').
+
+% get_piece(+GameState, +PosX, +PosY, -Piece)
+get_piece((_, Board), PosX, PosY, Piece) :-
+    nth0(PosY, Board, Row),
+    nth0(PosX, Row, Piece).
+
+%move((Player, Board), (Piece, StartX, StartY, DestX, DestY))
