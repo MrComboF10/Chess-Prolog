@@ -4,6 +4,24 @@
 player_color(1, 'white').
 player_color(2, 'black').
 
+% player_piece(?Player, ?Piece)
+player_piece(1, 'p').
+player_piece(1, 'r').
+player_piece(1, 'h').
+player_piece(1, 'b').
+player_piece(1, 'q').
+player_piece(1, 'k').
+player_piece(2, 'P').
+player_piece(2, 'R').
+player_piece(2, 'H').
+player_piece(2, 'B').
+player_piece(2, 'Q').
+player_piece(2, 'K').
+
+% next_player(?Player, ?Player)
+next_player(1, 2).
+next_player(2, 1).
+
 % create_row(+N, +Piece, -Row)
 create_row(0, _, []).
 create_row(N, Piece, [Piece|Row]) :-
@@ -105,23 +123,35 @@ display_game((Player, Board)) :-
     display_board(Board),
     display_player(Player).
 
-% player_piece(?Player, +Piece)
-player_piece(1, 'p').
-player_piece(1, 'r').
-player_piece(1, 'h').
-player_piece(1, 'b').
-player_piece(1, 'q').
-player_piece(1, 'k').
-player_piece(2, 'P').
-player_piece(2, 'R').
-player_piece(2, 'H').
-player_piece(2, 'B').
-player_piece(2, 'Q').
-player_piece(2, 'K').
-
-% get_piece(+GameState, +PosX, +PosY, -Piece)
-get_piece((_, Board), PosX, PosY, Piece) :-
+% get_piece(+Board, +PosX, +PosY, -Piece)
+get_piece(Board, PosX, PosY, Piece) :-
     nth0(PosY, Board, Row),
     nth0(PosX, Row, Piece).
 
-%move((Player, Board), (Piece, StartX, StartY, DestX, DestY))
+% insert_piece_row(+Row, +PosX, +Piece, -NewRow)
+insert_piece_row([], _, _, []).
+insert_piece_row([_|TRow], 0, Piece, [Piece|NewRow]) :-
+    insert_piece_row(TRow, -1, Piece, NewRow).
+insert_piece_row([HRow|TRow], PosX, Piece, [HRow|NewRow]) :-
+    NewPosX is PosX - 1,
+    insert_piece_row(TRow, NewPosX, Piece, NewRow).
+
+% insert_piece_board(+Board, +PosX, +PosY, +Piece, -NewBoard)
+insert_piece_board([], _, _, _, []).
+insert_piece_board([Row|TBoard], PosX, 0, Piece, [NewRow|NewBoard]) :-
+    insert_piece_row(Row, PosX, Piece, NewRow),
+    insert_piece_board(TBoard, PosX, -1, Piece, NewBoard).
+insert_piece_board([HBoard|TBoard], PosX, PosY, Piece, [HBoard|NewBoard]) :-
+    NewPosY is PosY - 1,
+    insert_piece_board(TBoard, PosX, NewPosY, Piece, NewBoard).
+
+% insert_piece(+GameState, +PosX, +PosY, +Piece, -NewGameState)
+insert_piece((Player, Board), PosX, PosY, Piece, (Player, NewBoard)) :-
+    insert_piece_board(Board, PosX, PosY, Piece, NewBoard).
+
+% move(+GameState, +Move, -NewGameState)
+move((Player, Board), (StartX, StartY, DestX, DestY), (NewPlayer, NewBoard)) :-
+    get_piece(Board, StartX, StartY, Piece),
+    next_player(Player, NewPlayer),
+    insert_piece_board(Board, StartX, StartY, ' ', AuxBoard),
+    insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
