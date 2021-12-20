@@ -29,3 +29,7 @@ test_move(Move) :-
     display_game(GameState),
     move(GameState, Move, NewGameState),
     display_game(NewGameState).
+
+test_move_valid(Move) :-
+    initial_state(GameState),
+    move_valid(GameState, Move).

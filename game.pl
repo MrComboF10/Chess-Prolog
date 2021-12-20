@@ -25,11 +25,9 @@ next_player(2, 1).
 % create_row(+N, +Piece, -Row)
 create_row(0, _, []).
 create_row(N, Piece, [Piece|Row]) :-
-    N >= 0,
+    N > 0,
     N1 is N - 1,
     create_row(N1, Piece, Row).
-create_row(_, _, _) :-
-    throw('Size of row negative!').
 
 % create_pawn_row(-Row)
 create_empty_row(Row) :-
@@ -40,18 +38,16 @@ create_pawns_row(1, Row) :-
     create_row(8, 'p', Row).
 create_pawns_row(2, Row) :-
     create_row(8, 'P', Row).
-create_pawns_row(_, _) :-
-    throw('Invalid Player!').
 
 % create_pieces_row(+Player, -Row)
 create_pieces_row(1, ['r', 'h', 'b', 'q', 'k', 'b', 'h', 'r']).
 create_pieces_row(2, ['R', 'H', 'B', 'Q', 'K', 'B', 'H', 'R']).
-create_pieces_row(_, _) :-
-    throw('Invalid Arguments!').
 
 % initial_board_aux(+N, -Board)
 initial_board_aux(8, []).
 initial_board_aux(N, [Row|Board]) :-
+    N >= 0,
+    N < 8,
     (
         N == 0 -> create_pieces_row(2, Row);
         N == 1 -> create_pawns_row(2, Row);
@@ -85,6 +81,7 @@ display_row(N, Row) :-
 display_intermediate_row_aux(1) :-
     write('|'), nl.
 display_intermediate_row_aux(N) :-
+    N > 1,
     write('|   '),
     N1 is N - 1,
     display_intermediate_row_aux(N1).
@@ -155,3 +152,27 @@ move((Player, Board), (StartX, StartY, DestX, DestY), (NewPlayer, NewBoard)) :-
     next_player(Player, NewPlayer),
     insert_piece_board(Board, StartX, StartY, ' ', AuxBoard),
     insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
+
+% coords_valid(+PosX, +PosY)
+coords_valid(PosX, PosY) :-
+    PosX >= 0,
+    PosX =< 7,
+    PosY >= 0,
+    PosY =< 7.
+
+% move_valid(+GameState, +Move)
+move_valid((Player, Board), (StartX, StartY, DestX, DestY)) :-
+    coords_valid(StartX, StartY),
+    coords_valid(DestX, DestY),
+    get_piece(Board, StartX, StartY, Piece),
+    player_piece(Player, Piece),
+    get_piece(Board, DestX, DestY, DestPiece),
+    (
+        DestPiece == ' ';
+        (
+            player_piece(PlayerPiece, DestPiece),
+            PlayerPiece \= Player
+        )
+    ).
+
+
