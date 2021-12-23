@@ -35,7 +35,8 @@ test_move(Move) :-
 
 test_move_valid(Move) :-
     initial_state(GameState),
-    move_valid(GameState, Move).
+    insert_piece(GameState, 3, 3, 'k', NewGameState),
+    move_valid(NewGameState, Move).
 
 test_move_direction_valid(Move) :-
     initial_state(GameState),
