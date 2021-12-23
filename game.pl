@@ -82,7 +82,8 @@ initial_board_aux(N, [Row|Board]) :-
 initial_board(Board) :-
     initial_board_aux(0, Board).
 
-initial_state((1, Board)) :-
+% initial_state(-GameState) GameState: (Player, LastMove, Check, Board)
+initial_state((1, (0, 0, 0, 0), false, Board)) :-
     initial_board(Board).
 
 % display_row_aux(+Row)
@@ -136,7 +137,7 @@ display_player(Player) :-
     write('Player turn: '), write(Color), nl.
 
 % display_game(+GameState)
-display_game((Player, Board)) :-
+display_game((Player, _, _, Board)) :-
     display_board(Board),
     display_player(Player).
 
@@ -164,16 +165,13 @@ insert_piece_board([HBoard|TBoard], PosX, PosY, Piece, [HBoard|NewBoard]) :-
     NewPosY is PosY - 1,
     insert_piece_board(TBoard, PosX, NewPosY, Piece, NewBoard).
 
-% insert_piece(+GameState, +PosX, +PosY, +Piece, -NewGameState)
-insert_piece((Player, Board), PosX, PosY, Piece, (Player, NewBoard)) :-
-    insert_piece_board(Board, PosX, PosY, Piece, NewBoard).
-
 % move(+GameState, +Move, -NewGameState)
-move((Player, Board), (StartX, StartY, DestX, DestY), (NewPlayer, NewBoard)) :-
+move((Player, _, false, Board), (StartX, StartY, DestX, DestY), (NewPlayer, (StartX, StartY, DestX, DestY), false, NewBoard)) :-
     get_piece(Board, StartX, StartY, Piece),
     next_player(Player, NewPlayer),
     insert_piece_board(Board, StartX, StartY, ' ', AuxBoard),
     insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
+    % verify check
 
 move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)) :-
     DistX is abs(DestX - StartX),
@@ -220,50 +218,50 @@ move_piece_valid(_, Move, Piece) :-
     move_distance(Move, DistX, DistY),
     DistX == 1, DistY == 2.
 
-move_piece_valid((_, Board), (StartX, StartY, DestX, DestY), Piece) :-
+move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), Piece) :-
     rook(Piece),
     (StartX == DestX ; StartY == DestY),
     move_direction_valid(Board, (StartX, StartY, DestX, DestY)).
 
-move_piece_valid((_, Board), Move, Piece) :-
+move_piece_valid((_, _, _, Board), Move, Piece) :-
     bishop(Piece),
     move_distance(Move, (DistX, DistY)),
     DistX == DistY,
     move_direction_valid(Board, Move).
 
-move_piece_valid((_, Board), (StartX, StartY, DestX, DestY), Piece) :-
+move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), Piece) :-
     queen(Piece),
     move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)),
     (StartX == DestX ; StartY == DestY ; DistX == DistY),
     move_direction_valid(Board, (StartX, StartY, DestX, DestY)).
 
 % pawn player 1
-move_piece_valid((_, Board), (PosX, StartY, PosX, DestY), 'p') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'p') :-
     DestY is StartY - 1,
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, Board), (PosX, StartY, PosX, DestY), 'p') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'p') :-
     DestY is StartY - 2,
     StartY == 6,
     MiddleY is StartY - 1,
     get_piece(Board, PosX, MiddleY, ' '),
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, Board), (StartX, StartY, DestX, DestY), 'p') :-
+move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), 'p') :-
     DestY is StartY - 1,
     move_distance((StartX, StartY, DestX, DestY), (1, 1)),
     get_piece(Board, DestX, DestY, Piece),
     player_piece(2, Piece).
 
 % pawn player 2
-move_piece_valid((_, Board), (PosX, StartY, PosX, DestY), 'P') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'P') :-
     DestY is StartY + 1,
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, Board), (PosX, StartY, PosX, DestY), 'P') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'P') :-
     DestY is StartY + 2,
     StartY == 1,
     MiddleY is StartY + 1,
     get_piece(Board, PosX, MiddleY, ' '),
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, Board), (StartX, StartY, DestX, DestY), 'P') :-
+move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), 'P') :-
     DestY is StartY + 1,
     move_distance((StartX, StartY, DestX, DestY), (1, 1)),
     get_piece(Board, DestX, DestY, Piece),
@@ -271,7 +269,7 @@ move_piece_valid((_, Board), (StartX, StartY, DestX, DestY), 'P') :-
 
 
 % move_valid(+GameState, +Move)
-move_valid((Player, Board), (StartX, StartY, DestX, DestY)) :-
+move_valid((Player, LastMove, Check, Board), (StartX, StartY, DestX, DestY)) :-
     coords_valid(StartX, StartY),
     coords_valid(DestX, DestY),
     get_piece(Board, StartX, StartY, Piece),
@@ -284,4 +282,4 @@ move_valid((Player, Board), (StartX, StartY, DestX, DestY)) :-
             PlayerPiece \= Player
         )
     ),
-    move_piece_valid((Player, Board), (StartX, StartY, DestX, DestY), Piece).
+    move_piece_valid((Player, LastMove, Check, Board), (StartX, StartY, DestX, DestY), Piece).
