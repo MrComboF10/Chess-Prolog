@@ -4,6 +4,26 @@
 player_color(1, 'white').
 player_color(2, 'black').
 
+% pieces:
+% pawn(?Char)
+pawn('p').
+pawn('P').
+% rook(?Char)
+rook('r').
+rook('R').
+% knight(?Char)
+knight('h').
+knight('H').
+% bishop(?Char)
+bishop('b').
+bishop('B').
+% queen(?Char)
+queen('q').
+queen('Q').
+% king(?Char)
+king('k').
+king('K').
+
 % player_piece(?Player, ?Piece)
 player_piece(1, 'p').
 player_piece(1, 'r').
@@ -173,6 +193,37 @@ move_valid((Player, Board), (StartX, StartY, DestX, DestY)) :-
             player_piece(PlayerPiece, DestPiece),
             PlayerPiece \= Player
         )
-    ).
+    ),
+    move_piece_valid((StartX, StartY, DestX, DestY), Piece).
+
+move_direction_valid(_, (StartX, StartY, DestX, DestY)) :-
+    DistX is abs(DestX - StartX),
+    DistY is abs(DestY - StartY),
+    DistX =< 1, DistY =< 1.
+% vertical
+move_direction_valid((Player, Board), (PosX, StartY, PosX, DestY)) :-
+    NewDestY is DestY - div((DestY - StartY), abs(DestY - StartY)),
+    get_piece(Board, PosX, NewDestY, ' '),
+    move_direction_valid((Player, Board), (PosX, StartY, PosX, NewDestY)).
+% horizonal
+move_direction_valid((Player, Board), (StartX, PosY, DestX, PosY)) :-
+    NewDestX is DestX - div((DestX - StartX), abs(DestX - StartX)),
+    get_piece(Board, NewDestX, PosY, ' '),
+    move_direction_valid((Player, Board), (StartX, PosY, NewDestX, PosY)).
+% diagonal
+move_direction_valid((Player, Board), (StartX, StartY, DestX, DestY)) :-
+    DistX is abs(DestX - StartX),
+    DistY is abs(DestY - StartY),
+    DistX == DistY,
+    NewDestX is DestX - div((DestX - StartX), abs(DestX - StartX)),
+    NewDestY is DestY - div((DestY - StartY), abs(DestY - StartY)),
+    get_piece(Board, NewDestX, NewDestY, ' '),
+    move_direction_valid((Player, Board), (StartX, StartY, NewDestX, NewDestY)).
 
 
+% move_piece_valid(+Move, +Piece)
+move_piece_valid((StartX, StartY, DestX, DestY), Piece) :-
+    knight(Piece),
+    DistX is abs(DestX - StartX),
+    DistY is abs(DestY - StartY),
+    DistX == 1, DistY == 2.

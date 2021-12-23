@@ -1,5 +1,8 @@
 :-include('game.pl').
 
+test_integer_division(A, B, R) :-
+    R is div((B - A), abs(B - A)).
+
 test_display_board :-
     initial_board(Board),
     display_board(Board).
@@ -33,3 +36,7 @@ test_move(Move) :-
 test_move_valid(Move) :-
     initial_state(GameState),
     move_valid(GameState, Move).
+
+test_move_direction_valid(Move) :-
+    initial_state(GameState),
+    move_direction_valid(GameState, Move).
