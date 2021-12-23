@@ -171,8 +171,9 @@ move((Player, _, false, Board), (StartX, StartY, DestX, DestY), (NewPlayer, (Sta
     next_player(Player, NewPlayer),
     insert_piece_board(Board, StartX, StartY, ' ', AuxBoard),
     insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
-    % verify check
+    % verify check (create attack predicates)
 
+% move_distance(+Move, -Dist)
 move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)) :-
     DistX is abs(DestX - StartX),
     DistY is abs(DestY - StartY).
@@ -236,36 +237,56 @@ move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), Piece) :-
     move_direction_valid(Board, (StartX, StartY, DestX, DestY)).
 
 % pawn player 1
-move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'p') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'p') :- % move one step
+    StartY \= DestY,
     DestY is StartY - 1,
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'p') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'p') :- % move two steps
+    StartY \= DestY,
     DestY is StartY - 2,
     StartY == 6,
     MiddleY is StartY - 1,
     get_piece(Board, PosX, MiddleY, ' '),
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), 'p') :-
+move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), 'p') :- % regular capture
+    StartX \= DestX, StartY \= DestY,
     DestY is StartY - 1,
     move_distance((StartX, StartY, DestX, DestY), (1, 1)),
     get_piece(Board, DestX, DestY, Piece),
     player_piece(2, Piece).
+move_piece_valid((_, (LastX, LastStartY, LastX, LastDestY), _, Board), (StartX, StartY, DestX, DestY), 'p') :- % capture en passant
+    StartX \= DestX, StartY \= DestY,
+    DestY is StartY - 1,
+    move_distance((LastX, LastStartY, LastX, LastDestY), (_, 2)),
+    move_distance((StartX, StartY, DestX, DestY), (1, 1)),
+    DestX == LastX,
+    StartY == LastDestY.
 
 % pawn player 2
-move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'P') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'P') :- % move one step
+    StartY \= DestY,
     DestY is StartY + 1,
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'P') :-
+move_piece_valid((_, _, _, Board), (PosX, StartY, PosX, DestY), 'P') :- % move two steps
+    StartY \= DestY,
     DestY is StartY + 2,
     StartY == 1,
     MiddleY is StartY + 1,
     get_piece(Board, PosX, MiddleY, ' '),
     get_piece(Board, PosX, DestY, ' ').
-move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), 'P') :-
+move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), 'P') :- % regular capture
+    StartX \= DestX, StartY \= DestY,
     DestY is StartY + 1,
     move_distance((StartX, StartY, DestX, DestY), (1, 1)),
     get_piece(Board, DestX, DestY, Piece),
     player_piece(1, Piece).
+move_piece_valid((_, (LastX, LastStartY, LastX, LastDestY), _, Board), (StartX, StartY, DestX, DestY), 'P') :- % capture en passant
+    StartX \= DestX, StartY \= DestY,
+    DestY is StartY + 1,
+    move_distance((LastX, LastStartY, LastX, LastDestY), (_, 2)),
+    move_distance((StartX, StartY, DestX, DestY), (1, 1)),
+    DestX == LastX,
+    StartY == LastDestY.
 
 
 % move_valid(+GameState, +Move)

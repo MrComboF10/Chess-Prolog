@@ -34,9 +34,10 @@ test_move(Move) :-
     display_game(NewGameState).
 
 test_move_valid(Move) :-
-    initial_state((Player, Move, Check, Board)),
+    initial_state(GameState),
+    (Player, LastMove, Check, Board) = GameState,
     insert_piece_board(Board, 1, 5, 'P', NewBoard),
-    move_valid((Player, Move, Check, NewBoard), Move).
+    move_valid((Player, LastMove, Check, NewBoard), Move).
 
 test_move_direction_valid(Move) :-
     initial_state(GameState),
