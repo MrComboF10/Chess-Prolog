@@ -12,8 +12,8 @@ test_display_game :-
     display_game((1, Board)).
 
 test_get_piece(PosX, PosY, Piece) :-
-    initial_state(GameState),
-    get_piece(GameState, PosX, PosY, Piece).
+    initial_board(Board),
+    get_piece(Board, PosX, PosY, Piece).
 
 test_insert_piece_board(PosX, PosY, Piece) :-
     initial_board(Board),
@@ -35,7 +35,7 @@ test_move(Move) :-
 
 test_move_valid(Move) :-
     initial_state(GameState),
-    insert_piece(GameState, 3, 3, 'k', NewGameState),
+    insert_piece(GameState, 0, 5, 'p', NewGameState),
     move_valid(NewGameState, Move).
 
 test_move_direction_valid(Move) :-
