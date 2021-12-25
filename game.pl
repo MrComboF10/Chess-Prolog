@@ -1,4 +1,5 @@
 :- use_module(library(lists)).
+:- use_module(library('between')).
 
 % player_color(?Player, ?Color)
 player_color(1, 'white').
@@ -216,12 +217,12 @@ move_direction_valid(Board, (StartX, StartY, DestX, DestY)) :-
 % move_piece_valid(+GameState, +Move, +Piece)
 move_piece_valid(_, Move, Piece) :-
     king(Piece),
-    move_distance(Move, DistX, DistY),
+    move_distance(Move, (DistX, DistY)),
     DistX =< 1, DistY =< 1.
 
 move_piece_valid(_, Move, Piece) :-
     knight(Piece),
-    move_distance(Move, DistX, DistY),
+    move_distance(Move, (DistX, DistY)),
     DistX == 1, DistY == 2.
 
 move_piece_valid((_, _, _, Board), (StartX, StartY, DestX, DestY), Piece) :-
@@ -281,6 +282,7 @@ move_piece_valid((Player, (LastX, LastStartY, LastX, LastDestY), _, _), (StartX,
 move_valid((Player, LastMove, Check, Board), (StartX, StartY, DestX, DestY)) :-
     coords_valid(StartX, StartY),
     coords_valid(DestX, DestY),
+    (StartX \= DestX ; StartY \= DestY),
     get_piece(Board, StartX, StartY, Piece),
     player_piece(Player, Piece),
     get_piece(Board, DestX, DestY, DestPiece),
@@ -292,3 +294,30 @@ move_valid((Player, LastMove, Check, Board), (StartX, StartY, DestX, DestY)) :-
         )
     ),
     move_piece_valid((Player, LastMove, Check, Board), (StartX, StartY, DestX, DestY), Piece).
+
+/*check_goal((Player, LastMove, false, Board), OpponentPiece) :-
+    opponent(Player, Opponent),
+    between(0, 7, StartX),
+    between(0, 7, StartY),
+    between(0, 7, DestX),
+    between(0, 7, DestY),
+    (StartX \= DestX ; StartY \= DestY),
+    player_piece(Player, Piece),
+    move_piece_valid((Player, LastMove, false, Board), (StartX, StartY, DestX, DestY), Piece),
+    get_piece(Board, DestX, DestY, OpponentPiece),
+    player_piece(Opponent, OpponentPiece).*/
+
+check((Player, LastMove, false, Board), Attacks) :-
+    opponent(Player, Opponent),
+    Goal = (
+        between(0, 7, StartX),
+        between(0, 7, StartY),
+        between(0, 7, DestX),
+        between(0, 7, DestY),
+        (StartX \= DestX ; StartY \= DestY),
+        player_piece(Player, Piece),
+        move_piece_valid((Player, LastMove, false, Board), (StartX, StartY, DestX, DestY), Piece),
+        get_piece(Board, DestX, DestY, OpponentPiece),
+        player_piece(Opponent, OpponentPiece)
+    ),
+    findall(OpponentPiece, Goal, Attacks).

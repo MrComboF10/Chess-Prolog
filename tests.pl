@@ -42,3 +42,23 @@ test_move_valid(Move) :-
 test_move_direction_valid(Move) :-
     initial_state(GameState),
     move_direction_valid(GameState, Move).
+
+test_find_all_moves(Moves) :-
+    initial_state(GameState),
+    %insert_piece_board(Board, 1, 5, 'P', NewBoard),
+    findall((DestX, DestY), (between(0, 7, DestX), between(0, 7, DestY), move_piece_valid(GameState, (1, 7, DestX, DestY), 'h')), Moves).
+
+test_check(Attacks) :-
+    Board = [
+                [' ', ' ', ' ', 'Q', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', 'q', ' ', ' ', ' ', 'P'],
+                [' ', ' ', ' ', ' ', 'B', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', 'B', ' ', ' ', ' ', ' '],
+                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+            ],
+
+    GameState = (1, (-1, -1, -1, -1), false, Board),
+    check(GameState, Attacks).
