@@ -117,38 +117,55 @@ player_piece(2, b_k).
 opponent(1, 2).
 opponent(2, 1).
 
-% empty_row(-Row)
-empty_row([e, e, e, e, e, e, e, e]).
+% initial_piece_position(?Piece, ?PosX, ?PosY)
+initial_piece_position(w_p1, 0, 6).
+initial_piece_position(w_p2, 1, 6).
+initial_piece_position(w_p3, 2, 6).
+initial_piece_position(w_p4, 3, 6).
+initial_piece_position(w_p5, 4, 6).
+initial_piece_position(w_p6, 5, 6).
+initial_piece_position(w_p7, 6, 6).
+initial_piece_position(w_p8, 7, 6).
 
-% pawns_row(+Player, -Row)
-pawns_row(1, [w_p1, w_p2, w_p3, w_p4, w_p5, w_p6, w_p7, w_p8]).
-pawns_row(2, [b_p1, b_p2, b_p3, b_p4, b_p5, b_p6, b_p7, b_p8]).
+initial_piece_position(w_r1, 0, 7).
+initial_piece_position(w_h1, 1, 7).
+initial_piece_position(w_b1, 2, 7).
+initial_piece_position(w_q, 3, 7).
+initial_piece_position(w_k, 4, 7).
+initial_piece_position(w_b2, 5, 7).
+initial_piece_position(w_h2, 6, 7).
+initial_piece_position(w_r2, 7, 7).
 
-% create_pieces_row(+Player, -Row)
-pieces_row(1, [w_r1, w_h1, w_b1, w_q, w_k, w_b2, w_h2, w_r2]).
-pieces_row(2, [b_r1, b_h1, b_b1, b_q, b_k, b_b2, b_h2, b_r2]).
+initial_piece_position(b_p1, 0, 1).
+initial_piece_position(b_p2, 1, 1).
+initial_piece_position(b_p3, 2, 1).
+initial_piece_position(b_p4, 3, 1).
+initial_piece_position(b_p5, 4, 1).
+initial_piece_position(b_p6, 5, 1).
+initial_piece_position(b_p7, 6, 1).
+initial_piece_position(b_p8, 7, 1).
 
-% initial_board_aux(+N, -Board)
-initial_board_aux(8, []).
-initial_board_aux(N, [Row|Board]) :-
-    N >= 0,
-    N < 8,
-    (
-        N == 0 -> pieces_row(2, Row);
-        N == 1 -> pawns_row(2, Row);
-        N == 6 -> pawns_row(1, Row);
-        N == 7 -> pieces_row(1, Row);
-        empty_row(Row)
+initial_piece_position(b_r1, 0, 0).
+initial_piece_position(b_h1, 1, 0).
+initial_piece_position(b_b1, 2, 0).
+initial_piece_position(b_q, 3, 0).
+initial_piece_position(b_k, 4, 0).
+initial_piece_position(b_b2, 5, 0).
+initial_piece_position(b_h2, 6, 0).
+initial_piece_position(b_r2, 7, 0).
+
+initial_player_pieces(Player, PlayerPieces) :-
+    Goal = (
+        player_piece(Player, Piece),
+        initial_piece_position(Piece, PosX, PosY)    
     ),
-    N1 is N + 1,
-    initial_board_aux(N1, Board).
 
-% initial_board(-Board)
-initial_board(Board) :-
-    initial_board_aux(0, Board).
+    findall((Piece, PosX, PosY), Goal, PlayerPieces).
 
-% initial_state(-GameState) GameState: (Player, LastMove, Check, Board)
-initial_state((1, (0, 0, 0, 0), false, Board)) :-
+% initial_state(-GameState) GameState: (Player, LastMove, Check, PlayerPieces, OpponentPieces)
+initial_state((1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces)) :-
+    initial_player_pieces(1, PlayerPieces),
+    initial_player_pieces(2, OpponentPieces),
     initial_board(Board).
 
 % display_row_aux(+Row)
@@ -167,7 +184,7 @@ display_row(N, Row) :-
 
 % display_intermediate_row_aux(+N)
 display_intermediate_row_aux(1) :-
-    write('|'), nl.
+    write('|').
 display_intermediate_row_aux(N) :-
     N > 1,
     write('|   '),
@@ -184,6 +201,7 @@ display_letters_row :-
     write('   '),
     write('a   b   c   d   e   f   g   h'), nl.
 
+/*
 % display_board_aux(+N, +Board)
 display_board_aux(N, [HBoard|[]]) :-
     display_row(N, HBoard).
@@ -197,6 +215,49 @@ display_board_aux(N, [HBoard|TBoard]) :-
 display_board(Board) :-
     display_board_aux(8, Board), nl,
     display_letters_row, nl.
+*/
+find_piece([], _, _, _) :- fail.
+find_piece([(Piece, PieceX, PieceY)|_], PieceX, PieceY, Piece).
+find_piece([(_, PieceX, PieceY)|T], PosX, PosY, NewPiece) :-
+    (PosX \= PieceX ; PosY \= PieceY),
+    find_piece(T, PosX, PosY, NewPiece).
+    
+    
+display_board_aux(_, _, _, 8).
+display_board_aux(PlayerPieces, OpponentPieces, -1, CountY) :-
+    N is 8 - CountY,
+    write(N), write('  '),
+    display_board_aux(PlayerPieces, OpponentPieces, 0, CountY).
+display_board_aux(PlayerPieces, OpponentPieces, CountX, CountY) :-
+    CountX >= 0,
+    CountY >= 0,
+    CountX =< 7,
+    CountY =< 7,
+    (find_piece(PlayerPieces, CountX, CountY, Piece) ; find_piece(PlayerPieces, CountX, CountY, Piece)) -> (
+        piece_graphic(Piece, PieceGraphic),
+        write(PieceGraphic)
+    ) ;
+    (
+        write(' ')
+    ),
+    (CountX == 7) -> (
+        (CountY == 7) -> nl ;
+        (
+            nl, display_intermediate_row, nl,
+            NewCountY is CountY + 1,
+            display_board_aux(PlayerPieces, OpponentPieces, -1, NewCountY)
+        ) 
+    ) ;
+    (
+        write(' - '),
+        NewCountX is CountX + 1,
+        display_board_aux(PlayerPieces, OpponentPieces, NewCountX, CountY)
+    ).
+    
+display_board(PlayerPieces, OpponentPieces) :-
+    display_board_aux(PlayerPieces, OpponentPieces, -1, 0), nl,
+    display_letters_row.
+
 
 % display_player(+Player)
 display_player(Player) :-
