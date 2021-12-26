@@ -48,7 +48,7 @@ test_find_all_moves(Moves) :-
     %insert_piece_board(Board, 1, 5, 'P', NewBoard),
     findall((DestX, DestY), (between(0, 7, DestX), between(0, 7, DestY), move_piece_valid(GameState, (1, 7, DestX, DestY), 'h')), Moves).
 
-test_check(Attacks) :-
+/*test_check(Attacks) :-
     Board = [
                 [' ', ' ', ' ', 'Q', ' ', ' ', ' ', ' '],
                 [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -62,3 +62,4 @@ test_check(Attacks) :-
 
     GameState = (1, (-1, -1, -1, -1), false, Board),
     check(GameState, Attacks).
+*/
