@@ -52,18 +52,16 @@ test_find_all_moves(Moves) :-
     %insert_piece_board(Board, 1, 5, 'P', NewBoard),
     findall((DestX, DestY), (between(0, 7, DestX), between(0, 7, DestY), move_piece_valid(GameState, (1, 7, DestX, DestY), 'h')), Moves).
 
-/*test_check(Attacks) :-
+test_update_pieces(PlayerPieces, OpponentPieces) :-
     Board = [
-                [' ', ' ', ' ', 'Q', ' ', ' ', ' ', ' '],
-                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                [' ', ' ', ' ', 'q', ' ', ' ', ' ', 'P'],
-                [' ', ' ', ' ', ' ', 'B', ' ', ' ', ' '],
-                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-                [' ', ' ', ' ', 'B', ' ', ' ', ' ', ' '],
-                [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-            ],
+        [e, e, e, b_q, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, 'w_q', e, e, e, 'b_p1'],
+        [e, e, e, e, 'b_b1', e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, 'b_b2', e, e, e, e],
+        [e, e, e, e, e, e, e, e]
+    ],
 
-    GameState = (1, (-1, -1, -1, -1), false, Board),
-    check(GameState, Attacks).
-*/
+    update_pieces(Board, 1, PlayerPieces, OpponentPieces).

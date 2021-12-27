@@ -162,10 +162,6 @@ initial_player_pieces(Player, PlayerPieces) :-
 
     findall((Piece, PosX, PosY), Goal, PlayerPieces).
 
-% initial_state(-GameState) GameState: (Player, LastMove, Check, PlayerPieces, OpponentPieces)
-initial_state((1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces)) :-
-    initial_player_pieces(1, PlayerPieces),
-    initial_player_pieces(2, OpponentPieces).
 
 % empty_row_aux(+Count, -Row)
 empty_row_aux(0, []).
@@ -231,10 +227,48 @@ fill_board_aux([(PlayerPiece, PX, PY)|TP], [(OpponentPiece, OX, OY)|TO], Board, 
 fill_board(PlayerPieces, OpponentPieces, EmptyBoard, ResBoard) :-
     fill_board_aux(PlayerPieces, OpponentPieces, EmptyBoard, _, ResBoard).
 
-% create_board(+PlayerPieces, +OpponentPieces, -Board)
-create_board(PlayerPieces, OpponentPieces, Board) :-
+% update_board(+PlayerPieces, +OpponentPieces, -Board)
+update_board(PlayerPieces, OpponentPieces, Board) :-
     empty_board(EmptyBoard),
     fill_board(PlayerPieces, OpponentPieces, EmptyBoard, Board).
+
+update_pieces_row([], _, _, _, [], []).
+update_pieces_row([Piece|TRow], PosX, PosY, Player, [(Piece, PosX, PosY)|PlayerPieces], OpponentPieces) :-
+    PosX > 0,
+    player_piece(Player, Piece),
+    NewPosX is PosX - 1,
+    update_pieces_row(TRow, NewPosX, PosY, Player, PlayerPieces, OpponentPieces).
+update_pieces_row([Piece|TRow], PosX, PosY, Player, PlayerPieces, [(Piece, PosX, PosY)|OpponentPieces]) :-
+    PosX > 0,
+    opponent(Player, Opponent),
+    player_piece(Opponent, Piece),
+    NewPosX is PosX - 1,
+    update_pieces_row(TRow, NewPosX, PosY, Player, PlayerPieces, OpponentPieces).
+update_pieces_row([Piece|TRow], PosX, PosY, Player, PlayerPieces, OpponentPieces) :-
+    PosX > 0,
+    opponent(Player, Opponent),
+    \+ player_piece(Player, Piece),
+    \+ player_piece(Opponent, Piece),
+    NewPosX is PosX - 1,
+    update_pieces_row(TRow, NewPosX, PosY, Player, PlayerPieces, OpponentPieces).
+
+update_pieces_board([], _, _, _, [], []).
+update_pieces_board([Row|TBoard], PosX, PosY, Player, NewPlayerPieces, NewOpponentPieces) :-
+    PosY > 0,
+    NewPosY is PosY - 1,
+    update_pieces_board(TBoard, PosX, NewPosY, Player, PlayerPieces, OpponentPieces),
+    update_pieces_row(Row, PosX, PosY, Player, PlayerPiecesRow, OpponentPiecesRow),
+    append(PlayerPieces, PlayerPiecesRow, NewPlayerPieces),
+    append(OpponentPieces, OpponentPiecesRow, NewOpponentPieces).
+
+update_pieces(Board, Player, PlayerPieces, OpponentPieces) :-
+    update_pieces_board(Board, 8, 8, Player, PlayerPieces, OpponentPieces).
+
+% initial_state(-GameState) GameState: (Player, LastMove, Check, PlayerPieces, OpponentPieces, Board)
+initial_state((1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces, Board)) :-
+    initial_player_pieces(1, PlayerPieces),
+    initial_player_pieces(2, OpponentPieces),
+    update_board(PlayerPieces, OpponentPieces, Board).
 
 % display_row_aux(+Row)
 display_row_aux([HRow|[]]) :-
@@ -298,17 +332,23 @@ display_player(Player) :-
     write('Player turn: '), write(Color), nl.
 
 % display_game(+GameState)
-display_game((Player, _, _, PlayerPieces, OpponentPieces)) :-
-    create_board(PlayerPieces, OpponentPieces, Board),
+display_game((Player, _, _, _, _, Board)) :-
     display_board(Board),
     display_player(Player).
 
-% move(+GameState, +Move, -NewGameState)
-move((Player, _, false, Board), (StartX, StartY, DestX, DestY), (NewPlayer, (StartX, StartY, DestX, DestY), false, NewBoard)) :-
+% move_board(+Move, +Board, -NewBoard)
+move_board((StartX, StartY, DestX, DestY), Board, NewBoard) :-
     get_piece(Board, StartX, StartY, Piece),
-    opponent(Player, NewPlayer),
     insert_piece_board(Board, StartX, StartY, e, AuxBoard),
     insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
+
+%move_player_pieces((StartX, StartY, DestX, DestY), PlayerPieces, NewPlayerPieces) :-
+
+
+% move(+GameState, +Move, -NewGameState)
+move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewBoard)) :-
+    opponent(Player, NewPlayer),
+    move_board(Move, Board, NewBoard).
     % verify check (create attack predicates)
 
 % move_distance(+Move, -Dist)
