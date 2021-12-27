@@ -336,19 +336,46 @@ display_game((Player, _, _, _, _, Board)) :-
     display_board(Board),
     display_player(Player).
 
+% update_piece_position(+PlayerPieces, +Move, -NewPlayerPieces)
+update_piece_position([], _, []).
+update_piece_position([(Piece, StartX, StartY)|TPlayerPieces], (StartX, StartY, DestX, DestY), [(Piece, DestX, DestY)|NewPlayerPieces]) :-
+    update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
+update_piece_position([(Piece, PosX, PosY)|TPlayerPieces], (StartX, StartY, DestX, DestY), [(Piece, PosX, PosY)|NewPlayerPieces]) :-
+    \+ (PosX == StartX, PosY == StartY),
+    update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
+
+% remove_piece(+PlayerPiece, +OpponentPieces, -NewOpponentPieces)
+remove_piece(_, [], []).
+remove_piece((PlayerPiece, PosX, PosY), [(_, PosX, PosY)|TOpponentPieces], NewOpponentPieces) :-
+    remove_piece((PlayerPiece, PosX, PosY), TOpponentPieces, NewOpponentPieces).
+remove_piece((PlayerPiece, PlayerX, PlayerY), [(OpponentPiece, OpponentX, OpponentY)|TOpponentPieces], [(OpponentPiece, OpponentX, OpponentY)|NewOpponentPieces]) :-
+    \+ (PlayerX == OpponentX, PlayerY == OpponentY),
+    remove_piece((PlayerPiece, PlayerX, PlayerY), TOpponentPieces, NewOpponentPieces).
+
+% remove_piece_same_position(+PlayerPieces, +OpponentPieces, -NewOpponentPieces)
+remove_piece_same_position([Piece|TPlayerPieces], OpponentPieces, NewOpponentPieces) :-
+    \+ remove_piece(Piece, OpponentPieces, NewOpponentPieces),
+    remove_piece_same_position(TPlayerPieces, OpponentPieces, NewOpponentPieces).
+remove_piece_same_position([Piece|_], OpponentPieces, NewOpponentPieces) :-
+    remove_piece(Piece, OpponentPieces, NewOpponentPieces).
+
 % move_board(+Move, +Board, -NewBoard)
 move_board((StartX, StartY, DestX, DestY), Board, NewBoard) :-
     get_piece(Board, StartX, StartY, Piece),
     insert_piece_board(Board, StartX, StartY, e, AuxBoard),
     insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
 
-%move_player_pieces((StartX, StartY, DestX, DestY), PlayerPieces, NewPlayerPieces) :-
+move_player_pieces(Move, PlayerPieces, OpponentPieces, NewPlayerPieces, NewOpponentPieces) :-
+    update_piece_position(PlayerPieces, Move, NewPlayerPieces),
+    remove_piece_same_position(PlayerPieces).
+
 
 
 % move(+GameState, +Move, -NewGameState)
 move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewBoard)) :-
     opponent(Player, NewPlayer),
-    move_board(Move, Board, NewBoard).
+    move_board(Move, Board, NewBoard),
+    update_pieces(NewBoard, Player, PlayerPieces, OpponentPieces).
     % verify check (create attack predicates)
 
 % move_distance(+Move, -Dist)
