@@ -214,19 +214,24 @@ insert_piece_board([HBoard|TBoard], PosX, PosY, Piece, [HBoard|NewBoard]) :-
     NewPosY is PosY - 1,
     insert_piece_board(TBoard, PosX, NewPosY, Piece, NewBoard).
 
-% fill_board(+PlayerPieces, +OpponentPieces, +Board, -NewBoard)
-fill_board([], [], _, _).
-fill_board([], [(OpponentPiece, OX, OY)|TO], Board, NewBoard) :-
+% fill_board(+PlayerPieces, +OpponentPieces, +Board, ?NewBoard, -ResBoard)
+fill_board_aux([], [], Board, _, Board).
+fill_board_aux([], [(OpponentPiece, OX, OY)|TO], Board, NewBoard, ResBoard) :-
     insert_piece_board(Board, OX, OY, OpponentPiece, NewBoard),
-    fill_board([], TO, NewBoard, _).
-fill_board([(PlayerPiece, PX, PY)|TP], [], Board, NewBoard) :-
+    fill_board_aux([], TO, NewBoard, _, ResBoard).
+fill_board_aux([(PlayerPiece, PX, PY)|TP], [], Board, NewBoard, ResBoard) :-
     insert_piece_board(Board, PX, PY, PlayerPiece, NewBoard),
-    fill_board(TP, [], NewBoard, _).
-fill_board([(PlayerPiece, PX, PY)|TP], [(OpponentPiece, OX, OY)|TO], Board, NewBoard) :-
+    fill_board_aux(TP, [], NewBoard, _, ResBoard).
+fill_board_aux([(PlayerPiece, PX, PY)|TP], [(OpponentPiece, OX, OY)|TO], Board, NewBoard, ResBoard) :-
     insert_piece_board(Board, PX, PY, PlayerPiece, AuxBoard),
     insert_piece_board(AuxBoard, OX, OY, OpponentPiece, NewBoard),
-    fill_board(TP, TO, NewBoard, _).
+    fill_board_aux(TP, TO, NewBoard, _, ResBoard).
 
+% fill_board(+PlayerPieces, +OpponentPieces, +EmptyBoard, -ResBoard)
+fill_board(PlayerPieces, OpponentPieces, EmptyBoard, ResBoard) :-
+    fill_board_aux(PlayerPieces, OpponentPieces, EmptyBoard, _, ResBoard).
+
+% create_board(+PlayerPieces, +OpponentPieces, -Board)
 create_board(PlayerPieces, OpponentPieces, Board) :-
     empty_board(EmptyBoard),
     fill_board(PlayerPieces, OpponentPieces, EmptyBoard, Board).
