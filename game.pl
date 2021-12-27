@@ -165,109 +165,30 @@ initial_player_pieces(Player, PlayerPieces) :-
 % initial_state(-GameState) GameState: (Player, LastMove, Check, PlayerPieces, OpponentPieces)
 initial_state((1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces)) :-
     initial_player_pieces(1, PlayerPieces),
-    initial_player_pieces(2, OpponentPieces),
-    initial_board(Board).
+    initial_player_pieces(2, OpponentPieces).
 
-% display_row_aux(+Row)
-display_row_aux([HRow|[]]) :-
-    piece_graphic(HRow, PieceGraphic),
-    write(PieceGraphic), nl.
-display_row_aux([HRow|TRow]) :-
-    piece_graphic(HRow, PieceGraphic),
-    write(PieceGraphic), write(' - '),
-    display_row_aux(TRow).
+% empty_row_aux(+Count, -Row)
+empty_row_aux(0, []).
+empty_row_aux(Count, [e|Row]) :-
+    Count > 0,
+    NewCount is Count - 1,
+    empty_row_aux(NewCount, Row).
 
-% display_row(+N, +Row)
-display_row(N, Row) :-
-    write(N), write('  '),
-    display_row_aux(Row).
+% empty_row(-Row)
+empty_row(Row) :-
+    empty_row_aux(8, Row).
 
-% display_intermediate_row_aux(+N)
-display_intermediate_row_aux(1) :-
-    write('|').
-display_intermediate_row_aux(N) :-
-    N > 1,
-    write('|   '),
-    N1 is N - 1,
-    display_intermediate_row_aux(N1).
+% empty_board_aux(+Count, -Board)
+empty_board_aux(0, []).
+empty_board_aux(Count, [Row|Board]) :-
+    Count > 0,
+    empty_row(Row),
+    NewCount is Count - 1,
+    empty_board_aux(NewCount, Board).
 
-% display_intermediate_row
-display_intermediate_row :-
-    write('   '),
-    display_intermediate_row_aux(8).
-
-% dipslay_letters_row
-display_letters_row :-
-    write('   '),
-    write('a   b   c   d   e   f   g   h'), nl.
-
-/*
-% display_board_aux(+N, +Board)
-display_board_aux(N, [HBoard|[]]) :-
-    display_row(N, HBoard).
-display_board_aux(N, [HBoard|TBoard]) :-
-    display_row(N, HBoard),
-    display_intermediate_row,
-    N1 is N - 1,
-    display_board_aux(N1, TBoard).
-
-% display_board(+Board)
-display_board(Board) :-
-    display_board_aux(8, Board), nl,
-    display_letters_row, nl.
-*/
-find_piece([], _, _, _) :- fail.
-find_piece([(Piece, PieceX, PieceY)|_], PieceX, PieceY, Piece).
-find_piece([(_, PieceX, PieceY)|T], PosX, PosY, NewPiece) :-
-    (PosX \= PieceX ; PosY \= PieceY),
-    find_piece(T, PosX, PosY, NewPiece).
-    
-    
-display_board_aux(_, _, _, 8).
-display_board_aux(PlayerPieces, OpponentPieces, -1, CountY) :-
-    N is 8 - CountY,
-    write(N), write('  '),
-    display_board_aux(PlayerPieces, OpponentPieces, 0, CountY).
-display_board_aux(PlayerPieces, OpponentPieces, CountX, CountY) :-
-    CountX >= 0,
-    CountY >= 0,
-    CountX =< 7,
-    CountY =< 7,
-    (find_piece(PlayerPieces, CountX, CountY, Piece) ; find_piece(PlayerPieces, CountX, CountY, Piece)) -> (
-        piece_graphic(Piece, PieceGraphic),
-        write(PieceGraphic)
-    ) ;
-    (
-        write(' ')
-    ),
-    (CountX == 7) -> (
-        (CountY == 7) -> nl ;
-        (
-            nl, display_intermediate_row, nl,
-            NewCountY is CountY + 1,
-            display_board_aux(PlayerPieces, OpponentPieces, -1, NewCountY)
-        ) 
-    ) ;
-    (
-        write(' - '),
-        NewCountX is CountX + 1,
-        display_board_aux(PlayerPieces, OpponentPieces, NewCountX, CountY)
-    ).
-    
-display_board(PlayerPieces, OpponentPieces) :-
-    display_board_aux(PlayerPieces, OpponentPieces, -1, 0), nl,
-    display_letters_row.
-
-
-% display_player(+Player)
-display_player(Player) :-
-    player_color(Player, Color),
-    write('Player turn: '), write(Color), nl.
-
-% display_game(+GameState)
-display_game((Player, _, _, Board)) :-
-    display_board(Board),
-    display_player(Player).
+% empty_board(-Board)
+empty_board(Board) :-
+    empty_board_aux(8, Board).
 
 % get_piece(+Board, +PosX, +PosY, -Piece)
 get_piece(Board, PosX, PosY, Piece) :-
@@ -292,6 +213,90 @@ insert_piece_board([HBoard|TBoard], PosX, PosY, Piece, [HBoard|NewBoard]) :-
     PosY \= 0,
     NewPosY is PosY - 1,
     insert_piece_board(TBoard, PosX, NewPosY, Piece, NewBoard).
+
+% fill_board(+PlayerPieces, +OpponentPieces, +Board, -NewBoard)
+fill_board([], [], _, _).
+fill_board([], [(OpponentPiece, OX, OY)|TO], Board, NewBoard) :-
+    insert_piece_board(Board, OX, OY, OpponentPiece, NewBoard),
+    fill_board([], TO, NewBoard, _).
+fill_board([(PlayerPiece, PX, PY)|TP], [], Board, NewBoard) :-
+    insert_piece_board(Board, PX, PY, PlayerPiece, NewBoard),
+    fill_board(TP, [], NewBoard, _).
+fill_board([(PlayerPiece, PX, PY)|TP], [(OpponentPiece, OX, OY)|TO], Board, NewBoard) :-
+    insert_piece_board(Board, PX, PY, PlayerPiece, AuxBoard),
+    insert_piece_board(AuxBoard, OX, OY, OpponentPiece, NewBoard),
+    fill_board(TP, TO, NewBoard, _).
+
+create_board(PlayerPieces, OpponentPieces, Board) :-
+    empty_board(EmptyBoard),
+    fill_board(PlayerPieces, OpponentPieces, EmptyBoard, Board).
+
+% display_row_aux(+Row)
+display_row_aux([HRow|[]]) :-
+    piece_graphic(HRow, PieceGraphic),
+    write(PieceGraphic), nl.
+display_row_aux([HRow|TRow]) :-
+    piece_graphic(HRow, PieceGraphic),
+    write(PieceGraphic), write(' - '),
+    display_row_aux(TRow).
+
+% display_row(+N, +Row)
+display_row(N, Row) :-
+    write(N), write('  '),
+    display_row_aux(Row).
+
+% display_intermediate_row_aux(+N)
+display_intermediate_row_aux(1) :-
+    write('|'), nl.
+display_intermediate_row_aux(N) :-
+    N > 1,
+    write('|   '),
+    N1 is N - 1,
+    display_intermediate_row_aux(N1).
+
+% display_intermediate_row
+display_intermediate_row :-
+    write('   '),
+    display_intermediate_row_aux(8).
+
+% dipslay_letters_row
+display_letters_row :-
+    write('   '),
+    write('a   b   c   d   e   f   g   h'), nl.
+
+
+% display_board_aux(+N, +Board)
+display_board_aux(N, [HBoard|[]]) :-
+    display_row(N, HBoard).
+display_board_aux(N, [HBoard|TBoard]) :-
+    display_row(N, HBoard),
+    display_intermediate_row,
+    N1 is N - 1,
+    display_board_aux(N1, TBoard).
+
+% display_board(+Board)
+display_board(Board) :-
+    display_board_aux(8, Board), nl,
+    display_letters_row, nl.
+
+/*
+find_piece([], _, _, _) :- fail.
+find_piece([(Piece, PieceX, PieceY)|_], PieceX, PieceY, Piece).
+find_piece([(_, PieceX, PieceY)|T], PosX, PosY, NewPiece) :-
+    (PosX \= PieceX ; PosY \= PieceY),
+    find_piece(T, PosX, PosY, NewPiece).
+*/
+
+% display_player(+Player)
+display_player(Player) :-
+    player_color(Player, Color),
+    write('Player turn: '), write(Color), nl.
+
+% display_game(+GameState)
+display_game((Player, _, _, PlayerPieces, OpponentPieces)) :-
+    create_board(PlayerPieces, OpponentPieces, Board),
+    display_board(Board),
+    display_player(Player).
 
 % move(+GameState, +Move, -NewGameState)
 move((Player, _, false, Board), (StartX, StartY, DestX, DestY), (NewPlayer, (StartX, StartY, DestX, DestY), false, NewBoard)) :-

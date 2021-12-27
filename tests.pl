@@ -3,13 +3,17 @@
 test_integer_division(A, B, R) :-
     R is div((B - A), abs(B - A)).
 
-test_display_board :-
-    initial_board(Board),
+test_create_board(Board) :-
+    initial_state((_, _, _, PlayerPieces, OpponentPieces)),
+    create_board(PlayerPieces, OpponentPieces, Board).
+
+test_display_empty_board :-
+    empty_board(Board),
     display_board(Board).
 
 test_display_game :-
-    initial_board(Board),
-    display_game((1, Board)).
+    initial_state(GameState),
+    display_game(GameState).
 
 test_get_piece(PosX, PosY, Piece) :-
     initial_board(Board),
