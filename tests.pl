@@ -39,9 +39,9 @@ test_move(Move) :-
 
 test_move_valid(Move) :-
     initial_state(GameState),
-    (Player, LastMove, Check, Board) = GameState,
+    (Player, LastMove, Check, _, _, Board) = GameState,
     insert_piece_board(Board, 1, 5, 'P', NewBoard),
-    move_valid((Player, LastMove, Check, NewBoard), Move).
+    move_valid((Player, LastMove, Check, _, _, NewBoard), Move).
 
 test_move_direction_valid(Move) :-
     initial_state(GameState),
@@ -54,14 +54,29 @@ test_find_all_moves(Moves) :-
 
 test_update_pieces(PlayerPieces, OpponentPieces) :-
     Board = [
-        [e, e, e, b_q, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, 'w_q', e, e, e, 'b_p1'],
-        [e, e, e, e, 'b_b1', e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, 'b_b2', e, e, e, e],
-        [e, e, e, e, e, e, e, e]
+        [e, e, e, b_q,  e,    e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ],
+        [e, e, e, w_q,  e,    e, e, b_p1],
+        [e, e, e, e,    b_b1, e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ],
+        [e, e, e, b_b2, e,    e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ]
     ],
 
     update_pieces(Board, 1, PlayerPieces, OpponentPieces).
+
+test_attacked_pieces(Pieces) :-
+    Board = [
+        [b_r1, e, e, w_q,  e,    e, e, e   ],
+        [e, e, e, b_p4,    b_p3,    e, e, e   ],
+        [e, e, e, b_q,  e,    e, e, b_p1],
+        [e, e, e, e,    b_b1, e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ],
+        [e, e, e, b_b2, e,    e, e, e   ],
+        [e, e, e, e,    e,    e, e, e   ]
+    ],
+    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
+    GameState = (1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces, Board),
+    attacked_pieces(GameState, Pieces).
