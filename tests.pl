@@ -72,11 +72,10 @@ test_attacked_pieces(Pieces) :-
         [e, e, e, b_p4,    b_p3,    e, e, e   ],
         [e, e, e, b_q,  e,    e, e, b_p1],
         [e, e, e, e,    b_b1, e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ],
+        [e, e, e, w_r1,    e,    e, e, e   ],
         [e, e, e, e,    e,    e, e, e   ],
         [e, e, e, b_b2, e,    e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ]
+        [w_r2, e, e, e,    e,    e, e, e   ]
     ],
-    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
-    GameState = (1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces, Board),
-    attacked_pieces(GameState, Pieces).
+    update_pieces(Board, 1, PlayerPieces, _),
+    attacked_pieces(1, (0, 0, 0, 0), PlayerPieces, Board, Pieces).

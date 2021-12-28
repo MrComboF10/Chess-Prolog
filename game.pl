@@ -342,6 +342,7 @@ update_piece_position([(Piece, StartX, StartY)|TPlayerPieces], (StartX, StartY, 
     update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
 update_piece_position([(Piece, PosX, PosY)|TPlayerPieces], (StartX, StartY, DestX, DestY), [(Piece, PosX, PosY)|NewPlayerPieces]) :-
     \+ (PosX == StartX, PosY == StartY),
+
     update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
 
 % remove_piece(+PosX, +PosY, +Pieces, -NewPieces)
@@ -495,17 +496,27 @@ move_valid((Player, LastMove, _, _, _, Board), (StartX, StartY, DestX, DestY)) :
     ),
     move_piece_valid(Player, Board, LastMove, (StartX, StartY, DestX, DestY)).
 
-attacked_pieces((Player, LastMove, _, [(_, PieceX, PieceY)|TPlayerPieces], _, Board), Pieces) :-
+attacked_pieces_from_piece(Player, LastMove, PieceX, PieceY, Board, Pieces) :-
     opponent(Player, Opponent),
     Goal = (
         between(0, 7, DestX),
         between(0, 7, DestY),
-        \+ (PieceX == DestX, PieceY == DestY),
+        ((PieceX \= DestX, PieceY == DestY) ; (PieceX == DestX, PieceY \= DestY) ; (PieceX \= DestX, PieceY \= DestY)),
         move_piece_valid(Player, Board, LastMove, (PieceX, PieceY, DestX, DestY)),
         get_piece(Board, DestX, DestY, DestPiece),
         player_piece(Opponent, DestPiece)
     ),
     findall(DestPiece, Goal, Pieces).
+
+attacked_pieces_with_dups(_, _, [], _, []).
+attacked_pieces_with_dups(Player, LastMove, [(_, PieceX, PieceY)|TPlayerPieces], Board, Pieces) :-
+    attacked_pieces(Player, LastMove, TPlayerPieces, Board, PiecesBefore),
+    attacked_pieces_from_piece(Player, LastMove, PieceX, PieceY, Board, PiecesFromPiece),
+    append(PiecesBefore, PiecesFromPiece, Pieces).
+
+attacked_pieces(Player, LastMove, PlayerPieces, Board, Pieces) :-
+    attacked_pieces_with_dups(Player, LastMove, PlayerPieces, Board, DupPieces),
+    remove_dups(DupPieces, Pieces).
 
 /*check_goal((Player, LastMove, false, Board), OpponentPiece) :-
     opponent(Player, Opponent),
