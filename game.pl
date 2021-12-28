@@ -364,12 +364,19 @@ move_player_pieces((StartX, StartY, DestX, DestY), PlayerPieces, OpponentPieces,
     update_piece_position(PlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces),
     remove_piece(DestX, DestY, OpponentPieces, NewOpponentPieces).
 
-% move(+GameState, +Move, -NewGameState)
-move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
+% move_without_check(+GameState, +Move, -NewGameState)
+move_witout_check((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
     opponent(Player, NewPlayer),
     move_board(Move, Board, NewBoard),
     move_player_pieces(Move, PlayerPieces, OpponentPieces, NewPlayerPieces, NewOpponentPieces).
-    % verify check (create attack predicates)
+
+% move(+GameState, +Move, -NewGameState)
+move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, true, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
+    move_witout_check((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, _, NewOpponentPieces, NewPlayerPieces, NewBoard)),
+    check(Player, Move, NewPlayerPieces, NewBoard).
+move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
+    move_witout_check((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, _, NewOpponentPieces, NewPlayerPieces, NewBoard)),
+    \+ check(Player, Move, NewPlayerPieces, NewBoard).
 
 % move_distance(+Move, -Dist)
 move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)) :-
@@ -517,6 +524,13 @@ attacked_pieces_with_dups(Player, LastMove, [(_, PieceX, PieceY)|TPlayerPieces],
 attacked_pieces(Player, LastMove, PlayerPieces, Board, Pieces) :-
     attacked_pieces_with_dups(Player, LastMove, PlayerPieces, Board, DupPieces),
     remove_dups(DupPieces, Pieces).
+
+check(Player, LastMove, PlayerPieces, Board) :-
+    attacked_pieces(Player, LastMove, PlayerPieces, Board, AttackedPieces),
+    opponent(Player, Opponent),
+    king(Piece),
+    player_piece(Opponent, Piece),
+    member(Piece, AttackedPieces).
 
 /*check_goal((Player, LastMove, false, Board), OpponentPiece) :-
     opponent(Player, Opponent),

@@ -31,10 +31,11 @@ test_insert_piece(PosX, PosY, Piece) :-
     insert_piece(GameState, PosX, PosY, Piece, NewGameState),
     display_game(NewGameState).
 
-test_move(Move) :-
+test_move(Move, Check) :-
     initial_state(GameState),
     display_game(GameState),
     move(GameState, Move, NewGameState),
+    (_, _, Check, _, _, _) = NewGameState,
     display_game(NewGameState).
 
 test_move_valid(Move) :-
@@ -79,3 +80,17 @@ test_attacked_pieces(Pieces) :-
     ],
     update_pieces(Board, 1, PlayerPieces, _),
     attacked_pieces(1, (0, 0, 0, 0), PlayerPieces, Board, Pieces).
+
+test_check :-
+    Board = [
+        [b_r1, e, e, w_q,  e,    e, e, e   ],
+        [e, e, e, b_p4,    b_p3,    e, e, e   ],
+        [e, e, e, b_q,  e,    e, e, b_p1],
+        [e, e, e, e,    b_b1, e, e, e   ],
+        [e, e, e, w_r1,    e,    e, e, e   ],
+        [e, e, e, e,    b_k,    e, e, e   ],
+        [e, e, e, b_b2, e,    e, e, e   ],
+        [w_r2, e, e, e,    e,    e, e, e   ]
+    ],
+    update_pieces(Board, 1, PlayerPieces, _),
+    check(1, (0, 0, 0, 0), PlayerPieces, Board).
