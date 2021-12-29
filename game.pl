@@ -418,7 +418,7 @@ move_piece_valid_aux(_, _, _, Move, Piece) :-
 move_piece_valid_aux(_, _, _, Move, Piece) :-
     knight(Piece),
     move_distance(Move, (DistX, DistY)),
-    DistX == 1, DistY == 2.
+    ((DistX == 1, DistY == 2) ; (DistX == 2, DistY == 1)).
 
 move_piece_valid_aux(_, Board, _, (StartX, StartY, DestX, DestY), Piece) :-
     rook(Piece),
@@ -473,6 +473,7 @@ move_piece_valid_aux(Player, _, (LastX, LastStartY, LastX, LastDestY), (StartX, 
     DestX == LastX, % verify if the capture is towards the opponent piece column
     StartY == LastDestY. % verify if the opponent pawn is next to player pawn in the beggining of movement
 
+% move_piece_valid(+Player, +Board, +LastMove, +Move)
 move_piece_valid(Player, Board, LastMove, (StartX, StartY, DestX, DestY)) :-
     get_piece(Board, StartX, StartY, Piece),
     move_piece_valid_aux(Player, Board, LastMove, (StartX, StartY, DestX, DestY), Piece).
@@ -496,6 +497,7 @@ move_valid((Player, LastMove, PlayerPieces, OpponentPieces, Board), (StartX, Sta
     move((Player, LastMove, PlayerPieces, OpponentPieces, Board), (StartX, StartY, DestX, DestY), (Opponent, _, _, NewPlayerPieces, _, NewBoard)),
     \+ check(Opponent, (StartX, StartY, DestX, DestY), NewPlayerPieces, NewBoard).
 
+% attacked_pieces_from_piece(+Player, +LastMove, +PieceX, +PieceY, +Board, -Pieces)
 attacked_pieces_from_piece(Player, LastMove, PieceX, PieceY, Board, Pieces) :-
     opponent(Player, Opponent),
     Goal = (
@@ -508,19 +510,32 @@ attacked_pieces_from_piece(Player, LastMove, PieceX, PieceY, Board, Pieces) :-
     ),
     findall(DestPiece, Goal, Pieces).
 
+% attacked_pieces_with_dups(+Player, +LastMove, +PlayerPieces, +Board, -Pieces)
 attacked_pieces_with_dups(_, _, [], _, []).
 attacked_pieces_with_dups(Player, LastMove, [(_, PieceX, PieceY)|TPlayerPieces], Board, Pieces) :-
     attacked_pieces(Player, LastMove, TPlayerPieces, Board, PiecesBefore),
     attacked_pieces_from_piece(Player, LastMove, PieceX, PieceY, Board, PiecesFromPiece),
     append(PiecesBefore, PiecesFromPiece, Pieces).
 
+% attacked_pieces(+Player, +LastMove, +PlayerPieces, +Board, -Pieces)
 attacked_pieces(Player, LastMove, PlayerPieces, Board, Pieces) :-
     attacked_pieces_with_dups(Player, LastMove, PlayerPieces, Board, DupPieces),
     remove_dups(DupPieces, Pieces).
 
+% check(+Player, +LastMove, +PlayerPieces, +Board)
 check(Player, LastMove, PlayerPieces, Board) :-
     attacked_pieces(Player, LastMove, PlayerPieces, Board, AttackedPieces),
     opponent(Player, Opponent),
     king(Piece),
     player_piece(Opponent, Piece),
     member(Piece, AttackedPieces).
+
+% all_piece_valid_moves(+Player, +LastMove, +PieceX, +PieceY, +Board, -Moves)
+piece_valid_moves(Player, LastMove, PieceX, PieceY, Board, Moves) :-
+    Goal = (
+        between(0, 7, DestX),
+        between(0, 7, DestY),
+        ((PieceX \= DestX, PieceY == DestY) ; (PieceX == DestX, PieceY \= DestY) ; (PieceX \= DestX, PieceY \= DestY)),
+        move_piece_valid(Player, Board, LastMove, (PieceX, PieceY, DestX, DestY))
+    ),
+    findall((PieceX, PieceY, DestX, DestY), Goal, Moves).

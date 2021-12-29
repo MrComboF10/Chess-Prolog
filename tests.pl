@@ -105,8 +105,19 @@ test_move_valid_2(Move) :-
         [e, e, e, e, e, e, e, b_r1],
         [e, e, e, e, w_k, e, e, e]
     ],
-    %PlayerPieces = [(w_k, 4, 7), (w_p1, 4, 4)],
-    %OpponentPieces = [(b_r2, 4, 0), (b_r1, 7, 6)],
     update_pieces(Board, 1, PlayerPieces, OpponentPieces),
     GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
     move_valid(GameState, Move).
+
+test_piece_valid_moves(Moves) :-
+    Board = [
+        [e, e, e, e, e,    e, e, e],
+        [e, e, e, e, e,    e, e, e],
+        [e, e, e, e, e,    e, e, e],
+        [e, e, e, e, e,    e, e, e],
+        [e, e, e, e, w_h1, e, e, e],
+        [e, e, e, e, e,    e, e, e],
+        [e, e, e, e, e,    e, e, e],
+        [e, e, e, e, e,    e, e, e]
+    ],
+    piece_valid_moves(1, (0, 0, 0, 0), 4, 4, Board, Moves).
