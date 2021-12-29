@@ -264,8 +264,8 @@ update_pieces_board([Row|TBoard], PosX, PosY, Player, NewPlayerPieces, NewOppone
 update_pieces(Board, Player, PlayerPieces, OpponentPieces) :-
     update_pieces_board(Board, 0, 0, Player, PlayerPieces, OpponentPieces).
 
-% initial_state(-GameState) GameState: (Player, LastMove, Check, PlayerPieces, OpponentPieces, Board)
-initial_state((1, (0, 0, 0, 0), false, PlayerPieces, OpponentPieces, Board)) :-
+% initial_state(-GameState) GameState: (Player, LastMove, PlayerPieces, OpponentPieces, Board)
+initial_state((1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board)) :-
     initial_player_pieces(1, PlayerPieces),
     initial_player_pieces(2, OpponentPieces),
     update_board(PlayerPieces, OpponentPieces, Board).
@@ -332,7 +332,7 @@ display_player(Player) :-
     write('Player turn: '), write(Color), nl.
 
 % display_game(+GameState)
-display_game((Player, _, _, _, _, Board)) :-
+display_game((Player, _, _, _, Board)) :-
     display_board(Board),
     display_player(Player).
 
@@ -342,7 +342,6 @@ update_piece_position([(Piece, StartX, StartY)|TPlayerPieces], (StartX, StartY, 
     update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
 update_piece_position([(Piece, PosX, PosY)|TPlayerPieces], (StartX, StartY, DestX, DestY), [(Piece, PosX, PosY)|NewPlayerPieces]) :-
     \+ (PosX == StartX, PosY == StartY),
-
     update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
 
 % remove_piece(+PosX, +PosY, +Pieces, -NewPieces)
@@ -364,19 +363,11 @@ move_player_pieces((StartX, StartY, DestX, DestY), PlayerPieces, OpponentPieces,
     update_piece_position(PlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces),
     remove_piece(DestX, DestY, OpponentPieces, NewOpponentPieces).
 
-% move_without_check(+GameState, +Move, -NewGameState)
-move_witout_check((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
+% move(+GameState, +Move, -NewGameState)
+move((Player, _, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
     opponent(Player, NewPlayer),
     move_board(Move, Board, NewBoard),
     move_player_pieces(Move, PlayerPieces, OpponentPieces, NewPlayerPieces, NewOpponentPieces).
-
-% move(+GameState, +Move, -NewGameState)
-move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, true, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
-    move_witout_check((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, _, NewOpponentPieces, NewPlayerPieces, NewBoard)),
-    check(Player, Move, NewPlayerPieces, NewBoard).
-move((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
-    move_witout_check((Player, _, false, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, _, NewOpponentPieces, NewPlayerPieces, NewBoard)),
-    \+ check(Player, Move, NewPlayerPieces, NewBoard).
 
 % move_distance(+Move, -Dist)
 move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)) :-
@@ -487,7 +478,7 @@ move_piece_valid(Player, Board, LastMove, (StartX, StartY, DestX, DestY)) :-
     move_piece_valid_aux(Player, Board, LastMove, (StartX, StartY, DestX, DestY), Piece).
 
 % move_valid(+GameState, +Move)
-move_valid((Player, LastMove, _, _, _, Board), (StartX, StartY, DestX, DestY)) :-
+move_valid((Player, LastMove, PlayerPieces, OpponentPieces, Board), (StartX, StartY, DestX, DestY)) :-
     coords_valid(StartX, StartY),
     coords_valid(DestX, DestY),
     (StartX \= DestX ; StartY \= DestY),
@@ -501,7 +492,9 @@ move_valid((Player, LastMove, _, _, _, Board), (StartX, StartY, DestX, DestY)) :
             PlayerPiece \= Player
         )
     ),
-    move_piece_valid(Player, Board, LastMove, (StartX, StartY, DestX, DestY)).
+    move_piece_valid(Player, Board, LastMove, (StartX, StartY, DestX, DestY)),
+    move((Player, LastMove, PlayerPieces, OpponentPieces, Board), (StartX, StartY, DestX, DestY), (Opponent, _, _, NewPlayerPieces, _, NewBoard)),
+    \+ check(Opponent, (StartX, StartY, DestX, DestY), NewPlayerPieces, NewBoard).
 
 attacked_pieces_from_piece(Player, LastMove, PieceX, PieceY, Board, Pieces) :-
     opponent(Player, Opponent),
@@ -531,30 +524,3 @@ check(Player, LastMove, PlayerPieces, Board) :-
     king(Piece),
     player_piece(Opponent, Piece),
     member(Piece, AttackedPieces).
-
-/*check_goal((Player, LastMove, false, Board), OpponentPiece) :-
-    opponent(Player, Opponent),
-    between(0, 7, StartX),
-    between(0, 7, StartY),
-    between(0, 7, DestX),
-    between(0, 7, DestY),
-    (StartX \= DestX ; StartY \= DestY),
-    player_piece(Player, Piece),
-    move_piece_valid((Player, LastMove, false, Board), (StartX, StartY, DestX, DestY), Piece),
-    get_piece(Board, DestX, DestY, OpponentPiece),
-    player_piece(Opponent, OpponentPiece).*/
-
-/*check((Player, LastMove, false, Board), Attacks) :-
-    opponent(Player, Opponent),
-    Goal = (
-        between(0, 7, StartX),
-        between(0, 7, StartY),
-        between(0, 7, DestX),
-        between(0, 7, DestY),
-        (StartX \= DestX ; StartY \= DestY),
-        player_piece(Player, Piece),
-        move_piece_valid((Player, LastMove, false, Board), (StartX, StartY, DestX, DestY), Piece),
-        get_piece(Board, DestX, DestY, OpponentPiece),
-        player_piece(Opponent, OpponentPiece)
-    ),
-    findall(OpponentPiece, Goal, Attacks).*/

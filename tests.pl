@@ -4,7 +4,7 @@ test_integer_division(A, B, R) :-
     R is div((B - A), abs(B - A)).
 
 test_create_board(Board) :-
-    initial_state((_, _, _, PlayerPieces, OpponentPieces)),
+    initial_state((_, _, PlayerPieces, OpponentPieces)),
     create_board(PlayerPieces, OpponentPieces, Board).
 
 test_display_empty_board :-
@@ -31,11 +31,10 @@ test_insert_piece(PosX, PosY, Piece) :-
     insert_piece(GameState, PosX, PosY, Piece, NewGameState),
     display_game(NewGameState).
 
-test_move(Move, Check) :-
+test_move(Move) :-
     initial_state(GameState),
     display_game(GameState),
     move(GameState, Move, NewGameState),
-    (_, _, Check, _, _, _) = NewGameState,
     display_game(NewGameState).
 
 test_move_valid(Move) :-
@@ -94,3 +93,20 @@ test_check :-
     ],
     update_pieces(Board, 1, PlayerPieces, _),
     check(1, (0, 0, 0, 0), PlayerPieces, Board).
+
+test_move_valid_2(Move) :-
+    Board = [
+        [e, e, e, e, b_r2, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, w_b1, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, b_r1],
+        [e, e, e, e, w_k, e, e, e]
+    ],
+    %PlayerPieces = [(w_k, 4, 7), (w_p1, 4, 4)],
+    %OpponentPieces = [(b_r2, 4, 0), (b_r1, 7, 6)],
+    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
+    GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
+    move_valid(GameState, Move).
