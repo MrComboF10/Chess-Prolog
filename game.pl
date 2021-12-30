@@ -5,41 +5,6 @@
 player_color(1, 'white').
 player_color(2, 'black').
 
-% piece_graphic(+Piece, -PieceGraphic)
-piece_graphic(w_p1, 'p').
-piece_graphic(w_p2, 'p').
-piece_graphic(w_p3, 'p').
-piece_graphic(w_p4, 'p').
-piece_graphic(w_p5, 'p').
-piece_graphic(w_p6, 'p').
-piece_graphic(w_p7, 'p').
-piece_graphic(w_p8, 'p').
-piece_graphic(b_p1, 'P').
-piece_graphic(b_p2, 'P').
-piece_graphic(b_p3, 'P').
-piece_graphic(b_p4, 'P').
-piece_graphic(b_p5, 'P').
-piece_graphic(b_p6, 'P').
-piece_graphic(b_p7, 'P').
-piece_graphic(b_p8, 'P').
-piece_graphic(w_r1, 'r').
-piece_graphic(w_r2, 'r').
-piece_graphic(b_r1, 'R').
-piece_graphic(b_r2, 'R').
-piece_graphic(w_h1, 'h').
-piece_graphic(w_h2, 'h').
-piece_graphic(b_h1, 'H').
-piece_graphic(b_h2, 'H').
-piece_graphic(w_b1, 'b').
-piece_graphic(w_b2, 'b').
-piece_graphic(b_b1, 'B').
-piece_graphic(b_b2, 'B').
-piece_graphic(w_q, 'q').
-piece_graphic(b_q, 'Q').
-piece_graphic(w_k, 'k').
-piece_graphic(b_k, 'K').
-piece_graphic(e, ' ').
-
 % pawn(?Char)
 pawn(w_p1).
 pawn(w_p2).
@@ -270,12 +235,52 @@ initial_state((1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board)) :-
     initial_player_pieces(2, OpponentPieces),
     update_board(PlayerPieces, OpponentPieces, Board).
 
+% piece_graphic(+Piece, -PieceGraphic)
+piece_graphic(Piece, 'p') :-
+    player_piece(1, Piece),
+    pawn(Piece).
+piece_graphic(Piece, 'P') :-
+    player_piece(2, Piece),
+    pawn(Piece).
+piece_graphic(Piece, 'r') :-
+    player_piece(1, Piece),
+    rook(Piece).
+piece_graphic(Piece, 'R') :-
+    player_piece(2, Piece),
+    rook(Piece).
+piece_graphic(Piece, 'h') :-
+    player_piece(1, Piece),
+    knight(Piece).
+piece_graphic(Piece, 'H') :-
+    player_piece(2, Piece),
+    knight(Piece).
+piece_graphic(Piece, 'b') :-
+    player_piece(1, Piece),
+    bishop(Piece).
+piece_graphic(Piece, 'B') :-
+    player_piece(2, Piece),
+    bishop(Piece).
+piece_graphic(Piece, 'q') :-
+    player_piece(1, Piece),
+    queen(Piece).
+piece_graphic(Piece, 'Q') :-
+    player_piece(2, Piece),
+    queen(Piece).
+piece_graphic(Piece, 'k') :-
+    player_piece(1, Piece),
+    king(Piece).
+piece_graphic(Piece, 'K') :-
+    player_piece(2, Piece),
+    king(Piece).
+piece_graphic(e, ' ').
+
+
 % display_row_aux(+Row)
-display_row_aux([HRow|[]]) :-
-    piece_graphic(HRow, PieceGraphic),
+display_row_aux([Piece|[]]) :-
+    piece_graphic(Piece, PieceGraphic),
     write(PieceGraphic), nl.
-display_row_aux([HRow|TRow]) :-
-    piece_graphic(HRow, PieceGraphic),
+display_row_aux([Piece|TRow]) :-
+    piece_graphic(Piece, PieceGraphic),
     write(PieceGraphic), write(' - '),
     display_row_aux(TRow).
 
@@ -546,6 +551,7 @@ piece_valid_moves(GameState, PieceX, PieceY, Moves) :-
     ),
     findall((PieceX, PieceY, DestX, DestY), Goal, Moves).
 
+% stalemate(+GameState)
 stalemate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
     king(King),
     player_piece(Player, King),
@@ -554,6 +560,7 @@ stalemate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
     opponent(Player, Opponent),
     \+ check(Opponent, LastMove, OpponentPieces, Board).
 
+% checkmate(+GameState)
 checkmate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
     king(King),
     player_piece(Player, King),
