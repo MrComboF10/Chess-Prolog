@@ -1,6 +1,12 @@
 :- use_module(library(lists)).
 :- use_module(library('between')).
 
+:- dynamic pawn/1.
+:- dynamic rook/1.
+:- dynamic knight/1.
+:- dynamic bishop/1.
+:- dynamic queen/1.
+
 % player_color(?Player, ?Color)
 player_color(1, 'white').
 player_color(2, 'black').
@@ -550,6 +556,20 @@ piece_valid_moves(GameState, PieceX, PieceY, Moves) :-
         move_valid(GameState, (PieceX, PieceY, DestX, DestY))
     ),
     findall((PieceX, PieceY, DestX, DestY), Goal, Moves).
+
+% promote(+Pawn, +PieceTypeToPromote)
+promote(Pawn, r) :-
+    retract(pawn(Pawn)),
+    assert(rook(Pawn)).
+promote(Pawn, h) :-
+    retract(pawn(Pawn)),
+    assert(knight(Pawn)).
+promote(Pawn, b) :-
+    retract(pawn(Pawn)),
+    assert(bishop(Pawn)).
+promote(Pawn, q) :-
+    retract(pawn(Pawn)),
+    assert(queen(Pawn)).
 
 % stalemate(+GameState)
 stalemate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-

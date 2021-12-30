@@ -155,3 +155,9 @@ test_stalemate :-
     update_pieces(Board, 1, PlayerPieces, OpponentPieces),
     GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
     stalemate(GameState).
+
+test_promote :-
+    Piece = w_p1,
+    %pawn(Piece).
+    promote(Piece, q),
+    queen(Piece).
