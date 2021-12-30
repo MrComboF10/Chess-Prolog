@@ -326,6 +326,12 @@ find_piece([(_, PieceX, PieceY)|T], PosX, PosY, NewPiece) :-
     find_piece(T, PosX, PosY, NewPiece).
 */
 
+find_piece_position([], _, _, _) :- fail.
+find_piece_position([(Piece, PieceX, PieceY)|_], Piece, PieceX, PieceY).
+find_piece_position([(PlayerPiece, _, _)|T], Piece, ResX, ResY) :-
+    PlayerPiece \= Piece,
+    find_piece_position(T, Piece, ResX, ResY).
+
 % display_player(+Player)
 display_player(Player) :-
     player_color(Player, Color),
@@ -531,11 +537,27 @@ check(Player, LastMove, PlayerPieces, Board) :-
     member(Piece, AttackedPieces).
 
 % all_piece_valid_moves(+Player, +LastMove, +PieceX, +PieceY, +Board, -Moves)
-piece_valid_moves(Player, LastMove, PieceX, PieceY, Board, Moves) :-
+piece_valid_moves(GameState, PieceX, PieceY, Moves) :-
     Goal = (
         between(0, 7, DestX),
         between(0, 7, DestY),
         ((PieceX \= DestX, PieceY == DestY) ; (PieceX == DestX, PieceY \= DestY) ; (PieceX \= DestX, PieceY \= DestY)),
-        move_piece_valid(Player, Board, LastMove, (PieceX, PieceY, DestX, DestY))
+        move_valid(GameState, (PieceX, PieceY, DestX, DestY))
     ),
     findall((PieceX, PieceY, DestX, DestY), Goal, Moves).
+
+stalemate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
+    king(King),
+    player_piece(Player, King),
+    find_piece_position(PlayerPieces, King, KingX, KingY),
+    piece_valid_moves((Player, LastMove, PlayerPieces, OpponentPieces, Board), KingX, KingY, []),
+    opponent(Player, Opponent),
+    \+ check(Opponent, LastMove, OpponentPieces, Board).
+
+checkmate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
+    king(King),
+    player_piece(Player, King),
+    find_piece_position(PlayerPieces, King, KingX, KingY),
+    piece_valid_moves((Player, LastMove, PlayerPieces, OpponentPieces, Board), KingX, KingY, []),
+    opponent(Player, Opponent),
+    check(Opponent, LastMove, OpponentPieces, Board).

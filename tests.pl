@@ -121,3 +121,37 @@ test_piece_valid_moves(Moves) :-
         [e, e, e, e, e,    e, e, e]
     ],
     piece_valid_moves(1, (0, 0, 0, 0), 4, 4, Board, Moves).
+
+test_find_piece_position(Piece, (PieceX, PieceY)) :-
+    initial_state((_, _, PlayerPieces, _, _)),
+    find_piece_position(PlayerPieces, Piece, PieceX, PieceY).
+
+test_checkmate :-
+    Board = [
+        [b_r1, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, b_k, e, e, e, e, e],
+        [w_k, e, e, e, e, e, e, e]
+    ],
+    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
+    GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
+    checkmate(GameState).
+
+test_stalemate :-
+    Board = [
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [e, e, e, e, e, e, e, e],
+        [b_k, e, e, e, e, e, e, e],
+        [b_p1, e, e, e, e, e, e, e],
+        [w_k, e, e, e, e, e, e, e]
+    ],
+    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
+    GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
+    stalemate(GameState).
