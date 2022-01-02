@@ -1,6 +1,8 @@
 :- use_module(library(lists)).
 :- use_module(library('between')).
 
+:- include('utils.pl').
+
 :- dynamic pawn/1.
 :- dynamic rook/1.
 :- dynamic knight/1.
@@ -311,9 +313,7 @@ display_intermediate_row :-
 
 % dipslay_letters_row
 display_letters_row :-
-    write('   '),
-    write('a   b   c   d   e   f   g   h'), nl.
-
+    write('   '), write('a   b   c   d   e   f   g   h'), nl.
 
 % display_board_aux(+N, +Board)
 display_board_aux(N, [HBoard|[]]) :-
@@ -588,3 +588,19 @@ checkmate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
     piece_valid_moves((Player, LastMove, PlayerPieces, OpponentPieces, Board), KingX, KingY, []),
     opponent(Player, Opponent),
     check(Opponent, LastMove, OpponentPieces, Board).
+
+% valid_move_input(+Input)
+valid_move_input([LetterCode, NumberCode]) :-
+    (((LetterCode >= 97), (LetterCode =< 104)) ; ((LetterCode >= 65), (LetterCode =< 72))), % verify letter
+    NumberCode >= 49, NumberCode =< 56. % verify number
+
+% input_to_coords(+Input, -CoordX, -CoordY)
+input_to_coords([LetterCode, NumberCode], CoordX, CoordY) :-
+    to_lower(LetterCode, LowerCode),
+    CoordX is LowerCode - 97,
+    CoordY is NumberCode - 49.
+
+% inputs_to_move(+StartInput, +DestInput, -Move)
+inputs_to_move(StartInput, DestInput, (StartX, StartY, DestX, DestY)) :-
+    input_to_coords(StartInput, StartX, StartY),
+    input_to_coords(DestInput, DestX, DestY).
