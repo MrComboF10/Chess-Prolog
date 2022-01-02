@@ -589,18 +589,41 @@ checkmate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
     opponent(Player, Opponent),
     check(Opponent, LastMove, OpponentPieces, Board).
 
-% valid_move_input(+Input)
-valid_move_input([LetterCode, NumberCode]) :-
+% valid_move_input_atom(+Input)
+valid_move_input_atom([LetterCode, NumberCode]) :-
     (((LetterCode >= 97), (LetterCode =< 104)) ; ((LetterCode >= 65), (LetterCode =< 72))), % verify letter
     NumberCode >= 49, NumberCode =< 56. % verify number
+
+% valid_move_input(+AtomInput)
+valid_move_input(AtomInput) :-
+    atom(AtomInput),
+    atom_codes(AtomInput, Input),
+    valid_move_input_atom(Input).
 
 % input_to_coords(+Input, -CoordX, -CoordY)
 input_to_coords([LetterCode, NumberCode], CoordX, CoordY) :-
     to_lower(LetterCode, LowerCode),
-    CoordX is LowerCode - 97,
-    CoordY is NumberCode - 49.
+    CoordX is LowerCode - 97, % == LowerCode - 'a'
+    CoordY is NumberCode - 49. % == NumberCode - '1'
 
 % inputs_to_move(+StartInput, +DestInput, -Move)
 inputs_to_move(StartInput, DestInput, (StartX, StartY, DestX, DestY)) :-
     input_to_coords(StartInput, StartX, StartY),
     input_to_coords(DestInput, DestX, DestY).
+
+% input_move_position(-Input)
+input_move_position(Input) :-
+    read(AtomInput),
+    valid_move_input(AtomInput),
+    atom_codes(AtomInput, Input).
+input_move_position(Input) :-
+    write('Invalid Input!'), nl,
+    input_move_position(Input).
+
+% input_move(-Move)
+input_move(Move) :-
+    write('Start? '), nl,
+    input_move_position(StartInput),
+    write('Dest? '), nl,
+    input_move_position(DestInput),
+    inputs_to_move(StartInput, DestInput, Move).
