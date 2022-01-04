@@ -3,6 +3,7 @@
 test_integer_division(A, B, R) :-
     R is div((B - A), abs(B - A)).
 
+/*
 test_create_board(Board) :-
     initial_state((_, _, PlayerPieces, OpponentPieces)),
     create_board(PlayerPieces, OpponentPieces, Board).
@@ -10,7 +11,7 @@ test_create_board(Board) :-
 test_display_empty_board :-
     empty_board(Board),
     display_board(Board).
-
+*/
 test_display_game :-
     initial_state(GameState),
     display_game(GameState).
@@ -165,3 +166,7 @@ test_promote :-
 test_valid_moves(ListOfMoves) :-
     initial_state(GameState),
     valid_moves(GameState, ListOfMoves).
+
+test_empty_tile(TileX, TileY) :-
+    initial_board,
+    empty_tile(TileX, TileY).

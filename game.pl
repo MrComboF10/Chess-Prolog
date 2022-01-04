@@ -3,7 +3,7 @@
 
 :- include('utils.pl').
 
-:- dynamic board/3.
+:- dynamic piece_board/3.
 :- dynamic pawn/1.
 :- dynamic rook/1.
 :- dynamic knight/1.
@@ -91,201 +91,53 @@ player_piece(2, b_k).
 opponent(1, 2).
 opponent(2, 1).
 
-/*
-% initial_piece_position(?Piece, ?PosX, ?PosY)
-initial_piece_position(w_p1, 0, 6).
-initial_piece_position(w_p2, 1, 6).
-initial_piece_position(w_p3, 2, 6).
-initial_piece_position(w_p4, 3, 6).
-initial_piece_position(w_p5, 4, 6).
-initial_piece_position(w_p6, 5, 6).
-initial_piece_position(w_p7, 6, 6).
-initial_piece_position(w_p8, 7, 6).
-
-initial_piece_position(w_r1, 0, 7).
-initial_piece_position(w_h1, 1, 7).
-initial_piece_position(w_b1, 2, 7).
-initial_piece_position(w_q, 3, 7).
-initial_piece_position(w_k, 4, 7).
-initial_piece_position(w_b2, 5, 7).
-initial_piece_position(w_h2, 6, 7).
-initial_piece_position(w_r2, 7, 7).
-
-initial_piece_position(b_p1, 0, 1).
-initial_piece_position(b_p2, 1, 1).
-initial_piece_position(b_p3, 2, 1).
-initial_piece_position(b_p4, 3, 1).
-initial_piece_position(b_p5, 4, 1).
-initial_piece_position(b_p6, 5, 1).
-initial_piece_position(b_p7, 6, 1).
-initial_piece_position(b_p8, 7, 1).
-
-initial_piece_position(b_r1, 0, 0).
-initial_piece_position(b_h1, 1, 0).
-initial_piece_position(b_b1, 2, 0).
-initial_piece_position(b_q, 3, 0).
-initial_piece_position(b_k, 4, 0).
-initial_piece_position(b_b2, 5, 0).
-initial_piece_position(b_h2, 6, 0).
-initial_piece_position(b_r2, 7, 0).
-*/
-
 initial_board :-
     % white pawns
-    assert(board(w_p1, 0, 6)),
-    assert(board(w_p2, 1, 6)),
-    assert(board(w_p3, 2, 6)),
-    assert(board(w_p4, 3, 6)),
-    assert(board(w_p5, 4, 6)),
-    assert(board(w_p6, 5, 6)),
-    assert(board(w_p7, 6, 6)),
-    assert(board(w_p8, 7, 6)),
+    assert(piece_board(w_p1, 0, 6)),
+    assert(piece_board(w_p2, 1, 6)),
+    assert(piece_board(w_p3, 2, 6)),
+    assert(piece_board(w_p4, 3, 6)),
+    assert(piece_board(w_p5, 4, 6)),
+    assert(piece_board(w_p6, 5, 6)),
+    assert(piece_board(w_p7, 6, 6)),
+    assert(piece_board(w_p8, 7, 6)),
 
     % white pieces
-    assert(board(w_r1, 0, 7)),
-    assert(board(w_h1, 1, 7)),
-    assert(board(w_b1, 2, 7)),
-    assert(board(w_q, 3, 7)),
-    assert(board(w_k, 4, 7)),
-    assert(board(w_b2, 5, 7)),
-    assert(board(w_h2, 6, 7)),
-    assert(board(w_r2, 7, 7)),
+    assert(piece_board(w_r1, 0, 7)),
+    assert(piece_board(w_h1, 1, 7)),
+    assert(piece_board(w_b1, 2, 7)),
+    assert(piece_board(w_q, 3, 7)),
+    assert(piece_board(w_k, 4, 7)),
+    assert(piece_board(w_b2, 5, 7)),
+    assert(piece_board(w_h2, 6, 7)),
+    assert(piece_board(w_r2, 7, 7)),
 
     % black pawns
-    assert(board(b_p1, 0, 1)),
-    assert(board(b_p2, 1, 1)),
-    assert(board(b_p3, 2, 1)),
-    assert(board(b_p4, 3, 1)),
-    assert(board(b_p5, 4, 1)),
-    assert(board(b_p6, 5, 1)),
-    assert(board(b_p7, 6, 1)),
-    assert(board(b_p8, 7, 1)),
+    assert(piece_board(b_p1, 0, 1)),
+    assert(piece_board(b_p2, 1, 1)),
+    assert(piece_board(b_p3, 2, 1)),
+    assert(piece_board(b_p4, 3, 1)),
+    assert(piece_board(b_p5, 4, 1)),
+    assert(piece_board(b_p6, 5, 1)),
+    assert(piece_board(b_p7, 6, 1)),
+    assert(piece_board(b_p8, 7, 1)),
 
     % black pieces
-    assert(board(b_r1, 0, 0)),
-    assert(board(b_h1, 1, 0)),
-    assert(board(b_b1, 2, 0)),
-    assert(board(b_q, 3, 0)),
-    assert(board(b_k, 4, 0)),
-    assert(board(b_b2, 5, 0)),
-    assert(board(b_h2, 6, 0)),
-    assert(board(b_r2, 7, 0)),
+    assert(piece_board(b_r1, 0, 0)),
+    assert(piece_board(b_h1, 1, 0)),
+    assert(piece_board(b_b1, 2, 0)),
+    assert(piece_board(b_q, 3, 0)),
+    assert(piece_board(b_k, 4, 0)),
+    assert(piece_board(b_b2, 5, 0)),
+    assert(piece_board(b_h2, 6, 0)),
+    assert(piece_board(b_r2, 7, 0)).
 
-initial_player_pieces(Player, PlayerPieces) :-
-    Goal = (
-        player_piece(Player, Piece),
-        initial_piece_position(Piece, PosX, PosY)    
-    ),
+% initial_state(-GameState) GameState: (Player, LastMove)
+initial_state((1, (0, 0, 0, 0))) :-
+    initial_board.
 
-    findall((Piece, PosX, PosY), Goal, PlayerPieces).
-
-
-% empty_row_aux(+Count, -Row)
-empty_row_aux(0, []).
-empty_row_aux(Count, [e|Row]) :-
-    Count > 0,
-    NewCount is Count - 1,
-    empty_row_aux(NewCount, Row).
-
-% empty_row(-Row)
-empty_row(Row) :-
-    empty_row_aux(8, Row).
-
-% empty_board_aux(+Count, -Board)
-empty_board_aux(0, []).
-empty_board_aux(Count, [Row|Board]) :-
-    Count > 0,
-    empty_row(Row),
-    NewCount is Count - 1,
-    empty_board_aux(NewCount, Board).
-
-% empty_board(-Board)
-empty_board(Board) :-
-    empty_board_aux(8, Board).
-
-% get_piece(+Board, +PosX, +PosY, -Piece)
-get_piece(Board, PosX, PosY, Piece) :-
-    nth0(PosY, Board, Row),
-    nth0(PosX, Row, Piece).
-
-% insert_piece_row(+Row, +PosX, +Piece, -NewRow)
-insert_piece_row([], _, _, []).
-insert_piece_row([_|TRow], 0, Piece, [Piece|NewRow]) :-
-    insert_piece_row(TRow, -1, Piece, NewRow).
-insert_piece_row([HRow|TRow], PosX, Piece, [HRow|NewRow]) :-
-    PosX \= 0,
-    NewPosX is PosX - 1,
-    insert_piece_row(TRow, NewPosX, Piece, NewRow).
-
-% insert_piece_board(+Board, +PosX, +PosY, +Piece, -NewBoard)
-insert_piece_board([], _, _, _, []).
-insert_piece_board([Row|TBoard], PosX, 0, Piece, [NewRow|NewBoard]) :-
-    insert_piece_row(Row, PosX, Piece, NewRow),
-    insert_piece_board(TBoard, PosX, -1, Piece, NewBoard).
-insert_piece_board([HBoard|TBoard], PosX, PosY, Piece, [HBoard|NewBoard]) :-
-    PosY \= 0,
-    NewPosY is PosY - 1,
-    insert_piece_board(TBoard, PosX, NewPosY, Piece, NewBoard).
-
-% fill_board(+PlayerPieces, +OpponentPieces, +Board, ?NewBoard, -ResBoard)
-fill_board_aux([], [], Board, _, Board).
-fill_board_aux([], [(OpponentPiece, OX, OY)|TO], Board, NewBoard, ResBoard) :-
-    insert_piece_board(Board, OX, OY, OpponentPiece, NewBoard),
-    fill_board_aux([], TO, NewBoard, _, ResBoard).
-fill_board_aux([(PlayerPiece, PX, PY)|TP], [], Board, NewBoard, ResBoard) :-
-    insert_piece_board(Board, PX, PY, PlayerPiece, NewBoard),
-    fill_board_aux(TP, [], NewBoard, _, ResBoard).
-fill_board_aux([(PlayerPiece, PX, PY)|TP], [(OpponentPiece, OX, OY)|TO], Board, NewBoard, ResBoard) :-
-    insert_piece_board(Board, PX, PY, PlayerPiece, AuxBoard),
-    insert_piece_board(AuxBoard, OX, OY, OpponentPiece, NewBoard),
-    fill_board_aux(TP, TO, NewBoard, _, ResBoard).
-
-% fill_board(+PlayerPieces, +OpponentPieces, +EmptyBoard, -ResBoard)
-fill_board(PlayerPieces, OpponentPieces, EmptyBoard, ResBoard) :-
-    fill_board_aux(PlayerPieces, OpponentPieces, EmptyBoard, _, ResBoard).
-
-% update_board(+PlayerPieces, +OpponentPieces, -Board)
-update_board(PlayerPieces, OpponentPieces, Board) :-
-    empty_board(EmptyBoard),
-    fill_board(PlayerPieces, OpponentPieces, EmptyBoard, Board).
-
-update_pieces_row([], _, _, _, [], []).
-update_pieces_row([Piece|TRow], PosX, PosY, Player, [(Piece, PosX, PosY)|PlayerPieces], OpponentPieces) :-
-    PosX < 8,
-    player_piece(Player, Piece),
-    NewPosX is PosX + 1,
-    update_pieces_row(TRow, NewPosX, PosY, Player, PlayerPieces, OpponentPieces).
-update_pieces_row([Piece|TRow], PosX, PosY, Player, PlayerPieces, [(Piece, PosX, PosY)|OpponentPieces]) :-
-    PosX < 8,
-    opponent(Player, Opponent),
-    player_piece(Opponent, Piece),
-    NewPosX is PosX + 1,
-    update_pieces_row(TRow, NewPosX, PosY, Player, PlayerPieces, OpponentPieces).
-update_pieces_row([Piece|TRow], PosX, PosY, Player, PlayerPieces, OpponentPieces) :-
-    PosX < 8,
-    opponent(Player, Opponent),
-    \+ player_piece(Player, Piece),
-    \+ player_piece(Opponent, Piece),
-    NewPosX is PosX + 1,
-    update_pieces_row(TRow, NewPosX, PosY, Player, PlayerPieces, OpponentPieces).
-
-update_pieces_board([], _, _, _, [], []).
-update_pieces_board([Row|TBoard], PosX, PosY, Player, NewPlayerPieces, NewOpponentPieces) :-
-    PosY < 8,
-    NewPosY is PosY + 1,
-    update_pieces_board(TBoard, PosX, NewPosY, Player, PlayerPieces, OpponentPieces),
-    update_pieces_row(Row, PosX, PosY, Player, PlayerPiecesRow, OpponentPiecesRow),
-    append(PlayerPieces, PlayerPiecesRow, NewPlayerPieces),
-    append(OpponentPieces, OpponentPiecesRow, NewOpponentPieces).
-
-update_pieces(Board, Player, PlayerPieces, OpponentPieces) :-
-    update_pieces_board(Board, 0, 0, Player, PlayerPieces, OpponentPieces).
-
-% initial_state(-GameState) GameState: (Player, LastMove, PlayerPieces, OpponentPieces, Board)
-initial_state((1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board)) :-
-    initial_player_pieces(1, PlayerPieces),
-    initial_player_pieces(2, OpponentPieces),
-    update_board(PlayerPieces, OpponentPieces, Board).
+empty_tile(TileX, TileY) :-
+    \+ piece_board(_, TileX, TileY).
 
 % piece_graphic(+Piece, -PieceGraphic)
 piece_graphic(Piece, 'p') :-
@@ -326,20 +178,31 @@ piece_graphic(Piece, 'K') :-
     king(Piece).
 piece_graphic(e, ' ').
 
-
-% display_row_aux(+Row)
-display_row_aux([Piece|[]]) :-
+% display_row_aux(+Col, +Row)
+display_row_aux(7, Row) :-
+    piece_board(Piece, 7, Row),
     piece_graphic(Piece, PieceGraphic),
     write(PieceGraphic), nl.
-display_row_aux([Piece|TRow]) :-
+display_row_aux(7, Row) :-
+    empty_tile(7, Row),
+    write(' '), nl.
+display_row_aux(Col, Row) :-
+    piece_board(Piece, Col, Row),
     piece_graphic(Piece, PieceGraphic),
     write(PieceGraphic), write(' - '),
-    display_row_aux(TRow).
+    NewCol is Col + 1,
+    display_row_aux(NewCol, Row).
+display_row_aux(Col, Row) :-
+    empty_tile(Col, Row),
+    write('  - '),
+    NewCol is Col + 1,
+    display_row_aux(NewCol, Row).
 
-% display_row(+N, +Row)
-display_row(N, Row) :-
+% display_row(+N, +Col, +Row)
+display_row(Col, Row) :-
+    N is 8 - Row,
     write(N), write('  '),
-    display_row_aux(Row).
+    display_row_aux(Col, Row).
 
 % display_intermediate_row_aux(+N)
 display_intermediate_row_aux(1) :-
@@ -359,33 +222,18 @@ display_intermediate_row :-
 display_letters_row :-
     write('   '), write('a   b   c   d   e   f   g   h'), nl.
 
-% display_board_aux(+N, +Board)
-display_board_aux(N, [HBoard|[]]) :-
-    display_row(N, HBoard).
-display_board_aux(N, [HBoard|TBoard]) :-
-    display_row(N, HBoard),
+% display_board_aux(+Col, +Row)
+display_board_aux(Col, 7) :-
+    display_row(Col, 7).
+display_board_aux(Col, Row) :-
+    display_row(Col, Row),
     display_intermediate_row,
-    N1 is N - 1,
-    display_board_aux(N1, TBoard).
+    NewRow is Row + 1,
+    display_board_aux(Col, NewRow).
 
-% display_board(+Board)
-display_board(Board) :-
-    display_board_aux(8, Board), nl,
+display_board :-
+    display_board_aux(0, 0), nl,
     display_letters_row, nl.
-
-/*
-find_piece([], _, _, _) :- fail.
-find_piece([(Piece, PieceX, PieceY)|_], PieceX, PieceY, Piece).
-find_piece([(_, PieceX, PieceY)|T], PosX, PosY, NewPiece) :-
-    (PosX \= PieceX ; PosY \= PieceY),
-    find_piece(T, PosX, PosY, NewPiece).
-*/
-
-find_piece_position([], _, _, _) :- fail.
-find_piece_position([(Piece, PieceX, PieceY)|_], Piece, PieceX, PieceY).
-find_piece_position([(PlayerPiece, _, _)|T], Piece, ResX, ResY) :-
-    PlayerPiece \= Piece,
-    find_piece_position(T, Piece, ResX, ResY).
 
 % display_player(+Player)
 display_player(Player) :-
@@ -393,42 +241,21 @@ display_player(Player) :-
     write('Player turn: '), write(Color), nl.
 
 % display_game(+GameState)
-display_game((Player, _, _, _, Board)) :-
-    display_board(Board),
+display_game((Player, _)) :-
+    display_board,
     display_player(Player).
 
-% update_piece_position(+PlayerPieces, +Move, -NewPlayerPieces)
-update_piece_position([], _, []).
-update_piece_position([(Piece, StartX, StartY)|TPlayerPieces], (StartX, StartY, DestX, DestY), [(Piece, DestX, DestY)|NewPlayerPieces]) :-
-    update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
-update_piece_position([(Piece, PosX, PosY)|TPlayerPieces], (StartX, StartY, DestX, DestY), [(Piece, PosX, PosY)|NewPlayerPieces]) :-
-    \+ (PosX == StartX, PosY == StartY),
-    update_piece_position(TPlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces).
-
-% remove_piece(+PosX, +PosY, +Pieces, -NewPieces)
-remove_piece(_, _, [], []).
-remove_piece(PosX, PosY, [(_, PosX, PosY)|TPieces], NewPieces) :-
-    remove_piece(PosX, PosY, TPieces, NewPieces).
-remove_piece(PosX, PosY, [(Piece, PieceX, PieceY)|TPieces], [(Piece, PieceX, PieceY)|NewPieces]) :-
-    \+ (PosX == PieceX, PosY == PieceY),
-    remove_piece(PosX, PosY, TPieces, NewPieces).
-
-% move_board(+Move, +Board, -NewBoard)
-move_board((StartX, StartY, DestX, DestY), Board, NewBoard) :-
-    get_piece(Board, StartX, StartY, Piece),
-    insert_piece_board(Board, StartX, StartY, e, AuxBoard),
-    insert_piece_board(AuxBoard, DestX, DestY, Piece, NewBoard).
-
-% move_player_pieces(+Move, +PlayerPieces, +OpponentPieces, -NewPlayerPieces, -NewOpponentPieces)
-move_player_pieces((StartX, StartY, DestX, DestY), PlayerPieces, OpponentPieces, NewPlayerPieces, NewOpponentPieces) :-
-    update_piece_position(PlayerPieces, (StartX, StartY, DestX, DestY), NewPlayerPieces),
-    remove_piece(DestX, DestY, OpponentPieces, NewOpponentPieces).
-
 % move(+GameState, +Move, -NewGameState)
-move((Player, _, PlayerPieces, OpponentPieces, Board), Move, (NewPlayer, Move, false, NewOpponentPieces, NewPlayerPieces, NewBoard)) :-
+move((Player, _), (StartX, StartY, DestX, DestY), (NewPlayer, (StartX, StartY, DestX, DestY))) :-
     opponent(Player, NewPlayer),
-    move_board(Move, Board, NewBoard),
-    move_player_pieces(Move, PlayerPieces, OpponentPieces, NewPlayerPieces, NewOpponentPieces).
+    piece_board(Piece, StartX, StartY),
+    retract(piece_board(Piece, StartX, StartY)),
+    (empty_tile(DestX, DestY) -> (
+        assert(piece_board(Piece, DestX, DestY))    
+    ) ; (
+        retract(piece_board(_, DestX, DestY)),
+        assert(piece_board(Piece, DestX, DestY))
+    )).
 
 % move_distance(+Move, -Dist)
 move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)) :-
