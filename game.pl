@@ -3,6 +3,7 @@
 
 :- include('utils.pl').
 
+:- dynamic board/3.
 :- dynamic pawn/1.
 :- dynamic rook/1.
 :- dynamic knight/1.
@@ -90,6 +91,7 @@ player_piece(2, b_k).
 opponent(1, 2).
 opponent(2, 1).
 
+/*
 % initial_piece_position(?Piece, ?PosX, ?PosY)
 initial_piece_position(w_p1, 0, 6).
 initial_piece_position(w_p2, 1, 6).
@@ -126,6 +128,48 @@ initial_piece_position(b_k, 4, 0).
 initial_piece_position(b_b2, 5, 0).
 initial_piece_position(b_h2, 6, 0).
 initial_piece_position(b_r2, 7, 0).
+*/
+
+initial_board :-
+    % white pawns
+    assert(board(w_p1, 0, 6)),
+    assert(board(w_p2, 1, 6)),
+    assert(board(w_p3, 2, 6)),
+    assert(board(w_p4, 3, 6)),
+    assert(board(w_p5, 4, 6)),
+    assert(board(w_p6, 5, 6)),
+    assert(board(w_p7, 6, 6)),
+    assert(board(w_p8, 7, 6)),
+
+    % white pieces
+    assert(board(w_r1, 0, 7)),
+    assert(board(w_h1, 1, 7)),
+    assert(board(w_b1, 2, 7)),
+    assert(board(w_q, 3, 7)),
+    assert(board(w_k, 4, 7)),
+    assert(board(w_b2, 5, 7)),
+    assert(board(w_h2, 6, 7)),
+    assert(board(w_r2, 7, 7)),
+
+    % black pawns
+    assert(board(b_p1, 0, 1)),
+    assert(board(b_p2, 1, 1)),
+    assert(board(b_p3, 2, 1)),
+    assert(board(b_p4, 3, 1)),
+    assert(board(b_p5, 4, 1)),
+    assert(board(b_p6, 5, 1)),
+    assert(board(b_p7, 6, 1)),
+    assert(board(b_p8, 7, 1)),
+
+    % black pieces
+    assert(board(b_r1, 0, 0)),
+    assert(board(b_h1, 1, 0)),
+    assert(board(b_b1, 2, 0)),
+    assert(board(b_q, 3, 0)),
+    assert(board(b_k, 4, 0)),
+    assert(board(b_b2, 5, 0)),
+    assert(board(b_h2, 6, 0)),
+    assert(board(b_r2, 7, 0)),
 
 initial_player_pieces(Player, PlayerPieces) :-
     Goal = (
@@ -557,6 +601,21 @@ piece_valid_moves(GameState, PieceX, PieceY, Moves) :-
     ),
     findall((PieceX, PieceY, DestX, DestY), Goal, Moves).
 
+% valid_moves_aux(+GameState, +PlayerPieces, -ListOfMoves)
+valid_moves_aux(_, [], []).
+valid_moves_aux(GameState, [(_, PieceX, PieceY)|T], ListOfMoves) :-
+    piece_valid_moves(GameState, PieceX, PieceY, Moves),
+    %write(Moves), nl,
+    append(OldListOfMoves, Moves, ListOfMoves),
+    valid_moves_aux(GameState, T, OldListOfMoves).
+
+
+% valid_moves(+GameState, -ListOfMoves)
+valid_moves(GameState, ListOfMoves) :-
+    (_, _, PlayerPieces, _, _) = GameState,
+    valid_moves_aux(GameState, PlayerPieces, ListOfMoves).
+
+
 % promote(+Pawn, +PieceTypeToPromote)
 promote(Pawn, r) :-
     retract(pawn(Pawn)),
@@ -589,6 +648,14 @@ checkmate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
     opponent(Player, Opponent),
     check(Opponent, LastMove, OpponentPieces, Board).
 
+% game_over(+GameState, -Winner)
+game_over(GameState, 0) :-
+    stalemate(GameState).
+game_over(GameState, Winner) :-
+    checkmate(GameState),
+    (Player, _, _, _, _) = GameState,
+    opponent(Player, Winner).
+
 % valid_move_input_atom(+Input)
 valid_move_input_atom([LetterCode, NumberCode]) :-
     (((LetterCode >= 97), (LetterCode =< 104)) ; ((LetterCode >= 65), (LetterCode =< 72))), % verify letter
@@ -620,10 +687,33 @@ input_move_position(Input) :-
     write('Invalid Input!'), nl,
     input_move_position(Input).
 
-% input_move(-Move)
-input_move(Move) :-
+% input_move(+GameState, -Move)
+input_move(GameState, Move) :-
     write('Start? '), nl,
     input_move_position(StartInput),
     write('Dest? '), nl,
     input_move_position(DestInput),
-    inputs_to_move(StartInput, DestInput, Move).
+    inputs_to_move(StartInput, DestInput, Move),
+    move_valid(GameState, Move).
+input_move(GameState, Move) :-
+    write('Invalid Move!'), nl,
+    input_move(GameState, Move).
+
+% game_loop(+GameState)
+game_loop(GameState) :-
+    game_over(GameState, 0),
+    write('draw!').
+game_loop(GameState) :-
+    game_over(GameState, Winner),
+    ((Winner == 1) ; (Winner == 2)),
+    player_color(Winner, WinnerColor),
+    write(WinnerColor), write(' wins!').
+game_loop(GameState) :-
+    display_game(GameState),
+    input_move(GameState, Move),
+    move(GameState, Move, NewGameState),
+    game_loop(NewGameState).
+
+play :-
+    initial_state(GameState),
+    game_loop(GameState).

@@ -161,3 +161,7 @@ test_promote :-
     %pawn(Piece).
     promote(Piece, q),
     queen(Piece).
+
+test_valid_moves(ListOfMoves) :-
+    initial_state(GameState),
+    valid_moves(GameState, ListOfMoves).
