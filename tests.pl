@@ -13,8 +13,8 @@ test_display_empty_board :-
     display_board(Board).
 */
 test_display_game :-
-    initial_state(GameState),
-    display_game(GameState).
+    initial_state,
+    display_game.
 
 test_get_piece(PosX, PosY, Piece) :-
     initial_board(Board),

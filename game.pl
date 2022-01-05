@@ -68,6 +68,7 @@ initial_pieces :-
     assert(pawn_scene(w_p1, 0)),
     assert(pawn_scene(w_p2, 0)),
     assert(pawn_scene(w_p3, 0)),
+    assert(pawn_scene(w_p4, 0)),
     assert(pawn_scene(w_p5, 0)),
     assert(pawn_scene(w_p6, 0)),
     assert(pawn_scene(w_p7, 0)),
@@ -110,7 +111,7 @@ initial_board :-
     assert(piece_board_scene(w_p5, 4, 6, 0)),
     assert(piece_board_scene(w_p6, 5, 6, 0)),
     assert(piece_board_scene(w_p7, 6, 6, 0)),
-    assert(piece_boar_scened(w_p8, 7, 6, 0)),
+    assert(piece_board_scene(w_p8, 7, 6, 0)),
 
     % white pieces
     assert(piece_board_scene(w_r1, 0, 7, 0)),
@@ -151,7 +152,7 @@ initial_last_move :-
     assert(last_move_scene((0, 0, 0, 0), 0)).
 
 % initial_state(-GameState) GameState: (Player, LastMove)
-initial_state() :-
+initial_state :-
     initial_scene,
     initial_pieces,
     initial_board,
@@ -177,7 +178,7 @@ bishop(Piece) :-
 % queen(?Piece)
 queen(Piece) :-
     scene(Scene),
-    queen_scene(Scene).
+    queen_scene(Piece, Scene).
 
 % player(?Player)
 player(Player) :-
@@ -189,9 +190,22 @@ last_move(LastMove) :-
     scene(Scene),
     last_move_scene(LastMove, Scene).
 
+% piece_board(?Piece, ?PieceX, ?PieceY)
 piece_board(Piece, PieceX, PieceY) :-
     scene(Scene),
     piece_board_scene(Piece, PieceX, PieceY, Scene).
+
+copy_pawn_scene :-
+    scene(Scene),
+    pawn_scene(Piece, OldScene),
+    retract(Piece, OldScene),
+    assert(Piece, Scene).
+
+next_scene :-
+    scene(Scene),
+    NextScene is Scene + 1,
+    retract(scene(Scene)),
+    assert(scene(NextScene)).
 
 % empty_tile(+TileX, +TileY)
 empty_tile(TileX, TileY) :-
@@ -292,15 +306,15 @@ display_board :-
     display_board_aux(0, 0), nl,
     display_letters_row, nl.
 
-% display_player(+Player)
-display_player(Player) :-
+display_player :-
+    player(Player),
     player_color(Player, Color),
     write('Player turn: '), write(Color), nl.
 
-% display_game(+GameState)
-display_game((Player, _)) :-
+% display_game
+display_game :-
     display_board,
-    display_player(Player).
+    display_player.
 
 % move(+GameState, +Move, -NewGameState)
 move((Player, _), (StartX, StartY, DestX, DestY), (NewPlayer, (StartX, StartY, DestX, DestY))) :-
