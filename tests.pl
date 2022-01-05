@@ -40,9 +40,7 @@ test_move(Move) :-
 
 test_move_valid(Move) :-
     initial_state(GameState),
-    (Player, LastMove, Check, _, _, Board) = GameState,
-    insert_piece_board(Board, 1, 5, 'P', NewBoard),
-    move_valid((Player, LastMove, Check, _, _, NewBoard), Move).
+    move_valid(GameState, Move).
 
 test_move_direction_valid(Move) :-
     initial_state(GameState),
@@ -111,17 +109,8 @@ test_move_valid_2(Move) :-
     move_valid(GameState, Move).
 
 test_piece_valid_moves(Moves) :-
-    Board = [
-        [e, e, e, e, e,    e, e, e],
-        [e, e, e, e, e,    e, e, e],
-        [e, e, e, e, e,    e, e, e],
-        [e, e, e, e, e,    e, e, e],
-        [e, e, e, e, w_h1, e, e, e],
-        [e, e, e, e, e,    e, e, e],
-        [e, e, e, e, e,    e, e, e],
-        [e, e, e, e, e,    e, e, e]
-    ],
-    piece_valid_moves(1, (0, 0, 0, 0), 4, 4, Board, Moves).
+    assert(piece_board(w_h1, 4, 4)),
+    piece_valid_moves((1, (0, 0, 0, 0)), 4, 4, Moves).
 
 test_find_piece_position(Piece, (PieceX, PieceY)) :-
     initial_state((_, _, PlayerPieces, _, _)),
@@ -170,3 +159,7 @@ test_valid_moves(ListOfMoves) :-
 test_empty_tile(TileX, TileY) :-
     initial_board,
     empty_tile(TileX, TileY).
+
+test_all_player_pieces(Pieces) :-
+    initial_state((Player, _)),
+    all_player_pieces(Player, Pieces).
