@@ -163,3 +163,24 @@ test_empty_tile(TileX, TileY) :-
 test_all_player_pieces(Pieces) :-
     initial_state((Player, _)),
     all_player_pieces(Player, Pieces).
+
+all_pieces_board_scene(Scene, []).
+all_pieces_board_scene(Scene, [(Piece, PieceX, PieceY)|T]) :-
+    piece_board_scene(Piece, PieceX, PieceY, Scene),
+    all_pieces_board_scene(Scene, T).
+
+all_pieces_board_scene(Scene, PiecesAcc, Pieces) :-
+    piece_board_scene(Piece, PieceX, PieceY, Scene),
+    \+ member((Piece, PieceX, PieceY), PiecesAcc),
+    all_pieces_board_scene(Scene, [(Piece, PieceX, PieceY)|PiecesAcc], Pieces), !.
+all_pieces_board_scene(_, PiecesAcc, PiecesAcc).
+
+test_all_pieces_board_scene(Scene, Pieces) :-
+    initial_state,
+    all_pieces_board_scene(Scene, [], Pieces).
+
+create_list(0, []).
+create_list(Count, [Count|CountList]) :-
+    Count > 0,
+    NewCount is Count - 1,
+    create_list(NewCount, CountList).
