@@ -164,20 +164,33 @@ test_all_player_pieces(Pieces) :-
     initial_state((Player, _)),
     all_player_pieces(Player, Pieces).
 
-all_pieces_board_scene(Scene, []).
-all_pieces_board_scene(Scene, [(Piece, PieceX, PieceY)|T]) :-
-    piece_board_scene(Piece, PieceX, PieceY, Scene),
-    all_pieces_board_scene(Scene, T).
-
-all_pieces_board_scene(Scene, PiecesAcc, Pieces) :-
+all_pieces_board_scene_aux(Scene, PiecesAcc, Pieces) :-
     piece_board_scene(Piece, PieceX, PieceY, Scene),
     \+ member((Piece, PieceX, PieceY), PiecesAcc),
     all_pieces_board_scene(Scene, [(Piece, PieceX, PieceY)|PiecesAcc], Pieces), !.
-all_pieces_board_scene(_, PiecesAcc, PiecesAcc).
+all_pieces_board_scene_aux(_, PiecesAcc, PiecesAcc).
+
+all_pieces_board_scene(Scene, Pieces) :-
+    all_pieces_board_scene_aux(Scene, [], Pieces).
 
 test_all_pieces_board_scene(Scene, Pieces) :-
     initial_state,
     all_pieces_board_scene(Scene, [], Pieces).
+
+test_copy_pieces_board_scene :-
+    initial_state,
+    scene(Scene),
+    all_pieces_board_scene(Scene, Pieces),
+    write(Pieces), nl,
+    next_scene,
+    copy_pieces_board_scene,
+    scene(NewScene),
+    all_pieces_board_scene(NewScene, NewPieces),
+    write(NewPieces), nl.
+
+test_remove_pieces_board_scene :-
+    initial_state,
+    all_pieces_board_scene
 
 create_list(0, []).
 create_list(Count, [Count|CountList]) :-

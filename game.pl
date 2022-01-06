@@ -195,17 +195,30 @@ piece_board(Piece, PieceX, PieceY) :-
     scene(Scene),
     piece_board_scene(Piece, PieceX, PieceY, Scene).
 
-copy_pawn_scene :-
+copy_pieces_board_scene :-
     scene(Scene),
-    pawn_scene(Piece, OldScene),
-    retract(Piece, OldScene),
-    assert(Piece, Scene).
+    OldScene is Scene - 1,
+    piece_board_scene(Piece, PieceX, PieceY, OldScene),
+    assert(piece_board_scene(Piece, PieceX, PieceY, Scene)),
+    fail;true.
+
+remove_pieces_board_scene :-
+    scene(Scene),
+    retractall(piece_board_scene(_, _, _, Scene)).
+
+change_scene(NewScene) :-
+    retract(scene(_)),
+    assert(scene(NextScene)).
 
 next_scene :-
     scene(Scene),
     NextScene is Scene + 1,
-    retract(scene(Scene)),
-    assert(scene(NextScene)).
+    change_scene(NewScene).
+
+previous_scene :-
+    scene(Scene),
+    NextScene is Scene - 1,
+    change_scene(NewScene).
 
 % empty_tile(+TileX, +TileY)
 empty_tile(TileX, TileY) :-
