@@ -33,10 +33,10 @@ test_insert_piece(PosX, PosY, Piece) :-
     display_game(NewGameState).
 
 test_move(Move) :-
-    initial_state(GameState),
-    display_game(GameState),
-    move(GameState, Move, NewGameState),
-    display_game(NewGameState).
+    initial_state,
+    display_game,
+    move(Move),
+    display_game.
 
 test_move_valid(Move) :-
     initial_state(GameState),

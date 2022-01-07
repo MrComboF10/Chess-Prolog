@@ -270,16 +270,6 @@ remove_scene :-
     retractall(bishop_scene(_, Scene)),
     retractall(queen_scene(_, Scene)).
 
-% remove_piece_board(+Piece, +PieceX, +PieceY)
-remove_piece_board(Piece, PieceX, PieceY) :-
-    scene(Scene),
-    retract(piece_board(Piece, PieceX, PieceY, Scene)).
-
-% add_piece_board(+Piece, +PieceX, +PieceY)
-add_piece_board(Piece, PieceX, PieceY) :-
-    scene(Scene),
-    assert(piece_board(Piece, PieceX, PieceY, Scene)).
-
 % change_scene(+NewScene)
 change_scene(NewScene) :-
     retract(scene(_)),
@@ -295,9 +285,36 @@ previous_scene :-
     NewScene is Scene - 1,
     change_scene(NewScene).
 
+next_player :-
+    scene(Scene),
+    player_scene(Player, Scene),
+    opponent(Player, Opponent),
+    retract(player_scene(_, Scene)),
+    assert(player_scene(Opponent, Scene)).
+
+change_last_move(NewLastMove) :-
+    scene(Scene),
+    retract(last_move_scene(_, Scene)),
+    assert(last_move_scene(NewLastMove, Scene)).
+
 % empty_tile(+TileX, +TileY)
 empty_tile(TileX, TileY) :-
     \+ piece_board(_, TileX, TileY).
+
+% remove_piece_board(+PieceX, +PieceY)
+remove_piece_board(PieceX, PieceY) :-
+    scene(Scene),
+    retract(piece_board_scene(_, PieceX, PieceY, Scene)).
+
+% add_piece_board(+Piece, +PieceX, +PieceY)
+add_piece_board(Piece, PieceX, PieceY) :-
+    scene(Scene),
+    (empty_tile(PieceX, PieceY) -> (
+        assert(piece_board_scene(Piece, PieceX, PieceY, Scene))    
+    ) ; (
+        retract(piece_board_scene(_, PieceX, PieceY, Scene)),
+        assert(piece_board_scene(Piece, PieceX, PieceY, Scene))
+    )).
 
 % piece_graphic(+Piece, -PieceGraphic)
 piece_graphic(Piece, 'p') :-
@@ -346,12 +363,14 @@ display_row_aux(7, Row) :-
     empty_tile(7, Row),
     write(' '), nl.
 display_row_aux(Col, Row) :-
+    Col < 7,
     piece_board(Piece, Col, Row),
     piece_graphic(Piece, PieceGraphic),
     write(PieceGraphic), write(' - '),
     NewCol is Col + 1,
     display_row_aux(NewCol, Row).
 display_row_aux(Col, Row) :-
+    Col < 7,
     empty_tile(Col, Row),
     write('  - '),
     NewCol is Col + 1,
@@ -385,6 +404,7 @@ display_letters_row :-
 display_board_aux(Col, 7) :-
     display_row(Col, 7).
 display_board_aux(Col, Row) :-
+    Row < 7,
     display_row(Col, Row),
     display_intermediate_row,
     NewRow is Row + 1,
@@ -404,17 +424,16 @@ display_game :-
     display_board,
     display_player.
 
-% move(+GameState, +Move, -NewGameState)
-move((Player, _), (StartX, StartY, DestX, DestY), (NewPlayer, (StartX, StartY, DestX, DestY))) :-
-    opponent(Player, NewPlayer),
+% move(+Move)
+move((StartX, StartY, DestX, DestY)) :-
+    next_scene,
+    copy_scene,
     piece_board(Piece, StartX, StartY),
-    retract(piece_board(Piece, StartX, StartY)),
-    (empty_tile(DestX, DestY) -> (
-        assert(piece_board(Piece, DestX, DestY))    
-    ) ; (
-        retract(piece_board(_, DestX, DestY)),
-        assert(piece_board(Piece, DestX, DestY))
-    )).
+    remove_piece_board(StartX, StartY),
+    add_piece_board(Piece, DestX, DestY),
+    next_player,
+    change_last_move((StartX, StartY, DestX, DestY)).
+    
 
 % move_distance(+Move, -Dist)
 move_distance((StartX, StartY, DestX, DestY), (DistX, DistY)) :-
