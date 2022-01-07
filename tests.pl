@@ -39,8 +39,8 @@ test_move(Move) :-
     display_game.
 
 test_move_valid(Move) :-
-    initial_state(GameState),
-    move_valid(GameState, Move).
+    initial_state,
+    move_valid(Move).
 
 test_move_direction_valid(Move) :-
     initial_state(GameState),
