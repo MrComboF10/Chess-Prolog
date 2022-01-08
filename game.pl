@@ -615,29 +615,29 @@ check :-
     player_piece(Opponent, King),
     member(King, AttackedPieces).
 
-% all_piece_valid_moves(+GameState, +PieceX, +PieceY, -Moves)
-piece_valid_moves(GameState, PieceX, PieceY, Moves) :-
+% all_piece_valid_moves(+PieceX, +PieceY, -Moves)
+piece_valid_moves(PieceX, PieceY, Moves) :-
     Goal = (
         between(0, 7, DestX),
         between(0, 7, DestY),
         ((PieceX \= DestX, PieceY == DestY) ; (PieceX == DestX, PieceY \= DestY) ; (PieceX \= DestX, PieceY \= DestY)),
-        move_valid(GameState, (PieceX, PieceY, DestX, DestY))
+        move_valid((PieceX, PieceY, DestX, DestY))
     ),
     findall((PieceX, PieceY, DestX, DestY), Goal, Moves).
 
-% valid_moves_aux(+GameState, +PlayerPieces, -ListOfMoves)
-valid_moves_aux(_, [], []).
-valid_moves_aux(GameState, [(_, PieceX, PieceY)|T], ListOfMoves) :-
-    piece_valid_moves(GameState, PieceX, PieceY, Moves),
+% valid_moves_aux(+PlayerPieces, -ListOfMoves)
+valid_moves_aux([], []).
+valid_moves_aux([(_, PieceX, PieceY)|T], ListOfMoves) :-
+    piece_valid_moves(PieceX, PieceY, Moves),
     append(OldListOfMoves, Moves, ListOfMoves),
-    valid_moves_aux(GameState, T, OldListOfMoves).
+    valid_moves_aux(T, OldListOfMoves).
 
 
-% valid_moves(+GameState, -ListOfMoves)
-valid_moves(GameState, ListOfMoves) :-
-    (Player, _) = GameState,
+% valid_moves(-ListOfMoves)
+valid_moves(ListOfMoves) :-
+    player(Player),
     all_player_pieces(Player, PlayerPieces),
-    valid_moves_aux(GameState, PlayerPieces, ListOfMoves).
+    valid_moves_aux(PlayerPieces, ListOfMoves).
 
 
 % promote(+Pawn, +PieceTypeToPromote)

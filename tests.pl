@@ -51,66 +51,36 @@ test_find_all_moves(Moves) :-
     %insert_piece_board(Board, 1, 5, 'P', NewBoard),
     findall((DestX, DestY), (between(0, 7, DestX), between(0, 7, DestY), move_piece_valid(GameState, (1, 7, DestX, DestY), 'h')), Moves).
 
-test_update_pieces(PlayerPieces, OpponentPieces) :-
-    Board = [
-        [e, e, e, b_q,  e,    e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ],
-        [e, e, e, w_q,  e,    e, e, b_p1],
-        [e, e, e, e,    b_b1, e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ],
-        [e, e, e, b_b2, e,    e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ]
-    ],
-
-    update_pieces(Board, 1, PlayerPieces, OpponentPieces).
-
-test_attacked_pieces(Pieces) :-
-    Board = [
-        [b_r1, e, e, w_q,  e,    e, e, e   ],
-        [e, e, e, b_p4,    b_p3,    e, e, e   ],
-        [e, e, e, b_q,  e,    e, e, b_p1],
-        [e, e, e, e,    b_b1, e, e, e   ],
-        [e, e, e, w_r1,    e,    e, e, e   ],
-        [e, e, e, e,    e,    e, e, e   ],
-        [e, e, e, b_b2, e,    e, e, e   ],
-        [w_r2, e, e, e,    e,    e, e, e   ]
-    ],
-    update_pieces(Board, 1, PlayerPieces, _),
-    attacked_pieces(1, (0, 0, 0, 0), PlayerPieces, Board, Pieces).
-
 test_check :-
-    Board = [
-        [b_r1, e, e, w_q,  e,    e, e, e   ],
-        [e, e, e, b_p4,    b_p3,    e, e, e   ],
-        [e, e, e, b_q,  e,    e, e, b_p1],
-        [e, e, e, e,    b_b1, e, e, e   ],
-        [e, e, e, w_r1,    e,    e, e, e   ],
-        [e, e, e, e,    b_k,    e, e, e   ],
-        [e, e, e, b_b2, e,    e, e, e   ],
-        [w_r2, e, e, e,    e,    e, e, e   ]
-    ],
-    update_pieces(Board, 1, PlayerPieces, _),
-    check(1, (0, 0, 0, 0), PlayerPieces, Board).
+    assert(scene(0)),
+    assert(player_scene(1, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
 
-test_move_valid_2(Move) :-
-    Board = [
-        [e, e, e, e, b_r2, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, w_b1, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, b_r1],
-        [e, e, e, e, w_k, e, e, e]
-    ],
-    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
-    GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
-    move_valid(GameState, Move).
+    % define pieces
+    assert(rook_scene(w_r1, 0)),
+    assert(bishop_scene(w_b1, 0)),
+    assert(queen_scene(w_q, 0)),
+
+    % build board position
+    assert(piece_board_scene(b_k, 4, 4, 0)),
+    assert(piece_board_scene(w_r1, 4, 0, 0)),
+    assert(piece_board_scene(w_b1, 4, 1, 0)),
+    assert(piece_board_scene(w_q, 4, 3, 0)),
+    display_game,
+    check.
 
 test_piece_valid_moves(Moves) :-
-    assert(piece_board(w_h1, 4, 4)),
-    piece_valid_moves((1, (0, 0, 0, 0)), 4, 4, Moves).
+    assert(scene(0)),
+    assert(player_scene(1, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
+
+    % define pieces
+    assert(knight_scene(w_h1, 0)),
+
+    % build board position
+    assert(piece_board_scene(w_h1, 4, 4, 0)),
+
+    piece_valid_moves(4, 4, Moves).
 
 test_find_piece_position(Piece, (PieceX, PieceY)) :-
     initial_state((_, _, PlayerPieces, _, _)),
