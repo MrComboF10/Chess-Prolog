@@ -42,6 +42,20 @@ test_move_valid(Move) :-
     initial_state,
     move_valid(Move).
 
+test_move_valid_2 :-
+    assert(scene(0)),
+    assert(player_scene(1, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
+
+    % define pieces
+    assert(knight_scene(w_h1, 0)),
+
+    % build board position
+    assert(piece_board_scene(w_h1, 4, 4, 0)),
+
+    move_valid((4, 4, 5, 6)),
+    move_valid((4, 4, 3, 6)).
+
 test_move_direction_valid(Move) :-
     initial_state(GameState),
     move_direction_valid(GameState, Move).
@@ -76,11 +90,16 @@ test_piece_valid_moves(Moves) :-
 
     % define pieces
     assert(knight_scene(w_h1, 0)),
+    assert(rook_scene(b_r1, 0)),
 
     % build board position
     assert(piece_board_scene(w_h1, 4, 4, 0)),
+    assert(piece_board_scene(w_k, 5, 7, 0)),
+    assert(piece_board_scene(b_r1, 5, 0, 0)),
 
+    %display_game,
     piece_valid_moves(4, 4, Moves).
+    %display_game.
 
 test_find_piece_position(Piece, (PieceX, PieceY)) :-
     initial_state((_, _, PlayerPieces, _, _)),

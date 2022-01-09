@@ -548,7 +548,7 @@ move_piece_valid((StartX, StartY, DestX, DestY)) :-
 move_valid((StartX, StartY, DestX, DestY)) :-
     coords_valid(StartX, StartY),
     coords_valid(DestX, DestY),
-    (StartX \= DestX ; StartY \= DestY),
+    \+ (StartX == DestX, StartY == DestY),
     piece_board(Piece, StartX, StartY),
     player(Player),
     player_piece(Player, Piece),
@@ -556,6 +556,7 @@ move_valid((StartX, StartY, DestX, DestY)) :-
     (
         empty_tile(DestX, DestY);
         (
+            \+ empty_tile(DestX, DestY),
             piece_board(DestPiece, DestX, DestY),
             player_piece(Opponent, DestPiece)
         )
@@ -563,13 +564,7 @@ move_valid((StartX, StartY, DestX, DestY)) :-
 
     move_piece_valid((StartX, StartY, DestX, DestY)),
     move((StartX, StartY, DestX, DestY)),
-    \+ check((Opponent, (StartX, StartY, DestX, DestY))),
-    remove_scene,
-    previous_scene.
-move_valid(_) :-
-    remove_scene,
-    previous_scene,
-    fail.
+    (check -> (remove_scene, previous_scene, fail) ; (remove_scene, previous_scene)).
 
 all_player_pieces(Player, Pieces) :-
     Goal = (
