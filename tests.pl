@@ -3,34 +3,9 @@
 test_integer_division(A, B, R) :-
     R is div((B - A), abs(B - A)).
 
-/*
-test_create_board(Board) :-
-    initial_state((_, _, PlayerPieces, OpponentPieces)),
-    create_board(PlayerPieces, OpponentPieces, Board).
-
-test_display_empty_board :-
-    empty_board(Board),
-    display_board(Board).
-*/
 test_display_game :-
     initial_state,
     display_game.
-
-test_get_piece(PosX, PosY, Piece) :-
-    initial_board(Board),
-    get_piece(Board, PosX, PosY, Piece).
-
-test_insert_piece_board(PosX, PosY, Piece) :-
-    initial_board(Board),
-    display_board(Board),
-    insert_piece_board(Board, PosX, PosY, Piece, NewBoard),
-    display_board(NewBoard).
-
-test_insert_piece(PosX, PosY, Piece) :-
-    initial_state(GameState),
-    display_game(GameState),
-    insert_piece(GameState, PosX, PosY, Piece, NewGameState),
-    display_game(NewGameState).
 
 test_move(Move) :-
     initial_state,
@@ -101,39 +76,14 @@ test_piece_valid_moves(Moves) :-
     piece_valid_moves(4, 4, Moves).
     %display_game.
 
+test_all_valid_moves(MovesLength) :-
+    initial_state,
+    valid_moves(Moves),
+    length(Moves, MovesLength).
+
 test_find_piece_position(Piece, (PieceX, PieceY)) :-
     initial_state((_, _, PlayerPieces, _, _)),
     find_piece_position(PlayerPieces, Piece, PieceX, PieceY).
-
-test_checkmate :-
-    Board = [
-        [b_r1, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, b_k, e, e, e, e, e],
-        [w_k, e, e, e, e, e, e, e]
-    ],
-    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
-    GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
-    checkmate(GameState).
-
-test_stalemate :-
-    Board = [
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [e, e, e, e, e, e, e, e],
-        [b_k, e, e, e, e, e, e, e],
-        [b_p1, e, e, e, e, e, e, e],
-        [w_k, e, e, e, e, e, e, e]
-    ],
-    update_pieces(Board, 1, PlayerPieces, OpponentPieces),
-    GameState = (1, (0, 0, 0, 0), PlayerPieces, OpponentPieces, Board),
-    stalemate(GameState).
 
 test_promote :-
     Piece = w_p1,
@@ -185,6 +135,18 @@ test_remove_pieces_board_scene :-
     remove_pieces_board_scene,
     all_pieces_board_scene(Scene, NewPieces),
     write(NewPieces), nl.
+
+test_input_move(Move) :-
+    assert(scene(0)),
+    assert(player_scene(1, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
+
+    % define pieces
+    assert(knight_scene(w_h1, 0)),
+
+    % build board position
+    assert(piece_board_scene(w_h1, 4, 4, 0)),
+    input_move(Move).
 
 
 create_list(0, []).

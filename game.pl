@@ -625,7 +625,7 @@ valid_moves_aux([], []).
 valid_moves_aux([(_, PieceX, PieceY)|T], ListOfMoves) :-
     piece_valid_moves(PieceX, PieceY, Moves),
     append(OldListOfMoves, Moves, ListOfMoves),
-    valid_moves_aux(T, OldListOfMoves).
+    valid_moves_aux(T, OldListOfMoves), !.
 
 
 % valid_moves(-ListOfMoves)
@@ -635,49 +635,41 @@ valid_moves(ListOfMoves) :-
     valid_moves_aux(PlayerPieces, ListOfMoves).
 
 
+% promote_scene(+Pawn, +PieceTypeToPromote, +Scene)
+promote_scene(Pawn, r, Scene) :-
+    assert(rook_scene(Pawn, Scene)).
+promote_scene(Pawn, h, Scene) :-
+    assert(knight_scene(Pawn, Scene)).
+promote_scene(Pawn, b, Scene) :-
+    assert(bishop_scene(Pawn, Scene)).
+promote_scene(Pawn, q, Scene) :-
+    assert(queen_scene(Pawn, Scene)).
+
 % promote(+Pawn, +PieceTypeToPromote)
-promote(Pawn, r) :-
-    retract(pawn(Pawn)),
-    assert(rook(Pawn)).
-promote(Pawn, h) :-
-    retract(pawn(Pawn)),
-    assert(knight(Pawn)).
-promote(Pawn, b) :-
-    retract(pawn(Pawn)),
-    assert(bishop(Pawn)).
-promote(Pawn, q) :-
-    retract(pawn(Pawn)),
-    assert(queen(Pawn)).
+promote(Pawn, PieceTypeToPromote) :-
+    scene(Scene),
+    retract(pawn_scene(Pawn, Scene)),
+    promote_scene(Pawn, PieceTypeToPromote, Scene).
 
-% stalemate(+GameState)
-stalemate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
-    king(King),
-    player_piece(Player, King),
-    find_piece_position(PlayerPieces, King, KingX, KingY),
-    piece_valid_moves((Player, LastMove, PlayerPieces, OpponentPieces, Board), KingX, KingY, []),
-    opponent(Player, Opponent),
-    \+ check(Opponent, LastMove, OpponentPieces, Board).
+stalemate :-
+    valid_moves([]),
+    \+ check.
 
-% checkmate(+GameState)
-checkmate((Player, LastMove, PlayerPieces, OpponentPieces, Board)) :-
-    king(King),
-    player_piece(Player, King),
-    find_piece_position(PlayerPieces, King, KingX, KingY),
-    piece_valid_moves((Player, LastMove, PlayerPieces, OpponentPieces, Board), KingX, KingY, []),
-    opponent(Player, Opponent),
-    check(Opponent, LastMove, OpponentPieces, Board).
+checkmate :-
+    valid_moves([]),
+    check.
 
-% game_over(+GameState, -Winner)
-game_over(GameState, 0) :-
-    stalemate(GameState).
-game_over(GameState, Winner) :-
-    checkmate(GameState),
-    (Player, _, _, _, _) = GameState,
+% game_over(-Winner)
+game_over(0) :-
+    stalemate.
+game_over(Winner) :-
+    checkmate,
+    player(Player),
     opponent(Player, Winner).
 
 % valid_move_input_atom(+Input)
 valid_move_input_atom([LetterCode, NumberCode]) :-
-    (((LetterCode >= 97), (LetterCode =< 104)) ; ((LetterCode >= 65), (LetterCode =< 72))), % verify letter
+    LetterCode >= 97, LetterCode =< 104, % verify letter
     NumberCode >= 49, NumberCode =< 56. % verify number
 
 % valid_move_input(+AtomInput)
@@ -688,9 +680,8 @@ valid_move_input(AtomInput) :-
 
 % input_to_coords(+Input, -CoordX, -CoordY)
 input_to_coords([LetterCode, NumberCode], CoordX, CoordY) :-
-    to_lower(LetterCode, LowerCode),
-    CoordX is LowerCode - 97, % == LowerCode - 'a'
-    CoordY is NumberCode - 49. % == NumberCode - '1'
+    CoordX is LetterCode - 97, % == LowerCode - 'a'
+    CoordY is 7 - (NumberCode - 49). % == NumberCode - '1'
 
 % inputs_to_move(+StartInput, +DestInput, -Move)
 inputs_to_move(StartInput, DestInput, (StartX, StartY, DestX, DestY)) :-
@@ -701,38 +692,37 @@ inputs_to_move(StartInput, DestInput, (StartX, StartY, DestX, DestY)) :-
 input_move_position(Input) :-
     read(AtomInput),
     valid_move_input(AtomInput),
-    atom_codes(AtomInput, Input).
+    atom_codes(AtomInput, Input), !.
 input_move_position(Input) :-
-    write('Invalid Input!'), nl,
+    write('Invalid Input! '), write(Input), nl,
     input_move_position(Input).
 
-% input_move(+GameState, -Move)
-input_move(GameState, Move) :-
+% input_move(-Move)
+input_move(Move) :-
     write('Start? '), nl,
     input_move_position(StartInput),
     write('Dest? '), nl,
     input_move_position(DestInput),
     inputs_to_move(StartInput, DestInput, Move),
-    move_valid(GameState, Move).
-input_move(GameState, Move) :-
+    move_valid(Move), !.
+input_move(Move) :-
     write('Invalid Move!'), nl,
-    input_move(GameState, Move).
+    input_move(Move).
 
-% game_loop(+GameState)
-game_loop(GameState) :-
-    game_over(GameState, 0),
+game_loop :-
+    game_over(0),
     write('draw!').
-game_loop(GameState) :-
-    game_over(GameState, Winner),
+game_loop :-
+    game_over(Winner),
     ((Winner == 1) ; (Winner == 2)),
     player_color(Winner, WinnerColor),
     write(WinnerColor), write(' wins!').
-game_loop(GameState) :-
-    display_game(GameState),
-    input_move(GameState, Move),
-    move(GameState, Move, NewGameState),
-    game_loop(NewGameState).
+game_loop :-
+    display_game,
+    input_move(Move),
+    move(Move),
+    game_loop.
 
 play :-
-    initial_state(GameState),
-    game_loop(GameState).
+    initial_state,
+    game_loop.
