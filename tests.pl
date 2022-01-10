@@ -148,6 +148,40 @@ test_input_move(Move) :-
     assert(piece_board_scene(w_h1, 4, 4, 0)),
     input_move(Move).
 
+test_checkmate :-
+    assert(scene(0)),
+    assert(player_scene(1, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
+
+    % define pieces
+    assert(queen_scene(b_q, 0)),
+    assert(rook_scene(b_r1, 0)),
+
+    % build board position
+    assert(piece_board_scene(w_k, 7, 7, 0)),
+    assert(piece_board_scene(b_k, 0, 1, 0)),
+    assert(piece_board_scene(b_r1, 7, 0, 0)),
+    assert(piece_board_scene(b_q, 7, 6, 0)),
+
+    %display_board,
+
+    checkmate.
+
+test_stalemate :-
+    assert(scene(0)),
+    assert(player_scene(1, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
+
+    % define pieces
+    assert(queen_scene(b_q, 0)),
+    assert(rook_scene(b_r1, 0)),
+
+    % build board position
+    assert(piece_board_scene(w_k, 7, 7, 0)),
+    assert(piece_board_scene(b_r1, 7, 0, 0)),
+    assert(piece_board_scene(b_q, 7, 6, 0)),
+
+    stalemate.
 
 create_list(0, []).
 create_list(Count, [Count|CountList]) :-

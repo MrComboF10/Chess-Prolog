@@ -564,7 +564,8 @@ move_valid((StartX, StartY, DestX, DestY)) :-
 
     move_piece_valid((StartX, StartY, DestX, DestY)),
     move((StartX, StartY, DestX, DestY)),
-    (check -> (remove_scene, previous_scene, fail) ; (remove_scene, previous_scene)).
+    player(NewPlayer),
+    (check(NewPlayer) -> (remove_scene, previous_scene, fail) ; (remove_scene, previous_scene)).
 
 all_player_pieces(Player, Pieces) :-
     Goal = (
@@ -575,9 +576,8 @@ all_player_pieces(Player, Pieces) :-
     ),
     findall((Piece, PieceX, PieceY), Goal, Pieces).
 
-% attacked_pieces_from_piece(+PieceX, +PieceY, -Pieces)
-attacked_pieces_from_piece(PieceX, PieceY, Pieces) :-
-    player(Player),
+% attacked_pieces_from_piece(+Player, +PieceX, +PieceY, -Pieces)
+attacked_pieces_from_piece(Player, PieceX, PieceY, Pieces) :-
     opponent(Player, Opponent),
     Goal = (
         between(0, 7, DestX),
@@ -589,21 +589,20 @@ attacked_pieces_from_piece(PieceX, PieceY, Pieces) :-
     ),
     findall(DestPiece, Goal, Pieces).
 
-% attacked_pieces_with_dups(+PlayerPieces, -Pieces)
-attacked_pieces_with_dups([], []).
-attacked_pieces_with_dups([(_, PieceX, PieceY)|TPlayerPieces], Pieces) :-
-    attacked_pieces_with_dups(TPlayerPieces, PiecesBefore),
-    attacked_pieces_from_piece(PieceX, PieceY, PiecesFromPiece),
+% attacked_pieces_with_dups(+Player, +PlayerPieces, -Pieces)
+attacked_pieces_with_dups(_, [], []).
+attacked_pieces_with_dups(Player, [(_, PieceX, PieceY)|TPlayerPieces], Pieces) :-
+    attacked_pieces_with_dups(Player, TPlayerPieces, PiecesBefore),
+    attacked_pieces_from_piece(Player, PieceX, PieceY, PiecesFromPiece),
     append(PiecesBefore, PiecesFromPiece, Pieces).
 
 % attacked_pieces(+Player, -Pieces)
 attacked_pieces(Player, Pieces) :-
     all_player_pieces(Player, PlayerPieces),
-    attacked_pieces_with_dups(PlayerPieces, DupPieces),
+    attacked_pieces_with_dups(Player, PlayerPieces, DupPieces),
     remove_dups(DupPieces, Pieces).
 
-check :-
-    player(Player),
+check(Player) :-
     attacked_pieces(Player, AttackedPieces),
     opponent(Player, Opponent),
     king(King),
@@ -653,11 +652,15 @@ promote(Pawn, PieceTypeToPromote) :-
 
 stalemate :-
     valid_moves([]),
-    \+ check.
+    player(Player),
+    opponent(Player, Opponent),
+    \+ check(Opponent).
 
 checkmate :-
     valid_moves([]),
-    check.
+    player(Player),
+    opponent(Player, Opponent),
+    check(Opponent).
 
 % game_over(-Winner)
 game_over(0) :-
