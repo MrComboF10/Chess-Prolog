@@ -178,8 +178,6 @@ test_checkmate :-
     assert(piece_board_scene(b_r1, 7, 0, 0)),
     assert(piece_board_scene(b_q, 7, 6, 0)),
 
-    %display_board,
-
     checkmate.
 
 test_stalemate :-

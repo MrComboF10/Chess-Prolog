@@ -669,6 +669,16 @@ promote(Pawn, PieceTypeToPromote) :-
     retract(pawn_scene(Pawn, Scene)),
     promote_scene(Pawn, PieceTypeToPromote, Scene).
 
+% check_promotion(-Pawn)
+check_promotion(Pawn) :-
+    player(1),
+    piece_board(Pawn, _, 0), % top row
+    pawn(Pawn).
+check_promotion(Pawn) :-
+    player(2),
+    piece_board(Pawn, _, 7), % bottom row
+    pawn(Pawn).
+
 stalemate :-
     valid_moves([]),
     player(Player),
@@ -730,6 +740,26 @@ input_move(Move) :-
 input_move(Move) :-
     write('Invalid Move!'), nl,
     input_move(Move).
+
+valid_piece_type(q).
+valid_piece_type(r).
+valid_piece_type(h).
+valid_piece_type(b).
+
+input_promotion(PieceType) :-
+    write('(q, r, h, b)?'), nl,
+    read(PieceType),
+    valid_piece_type(PieceType), !.
+input_promotion(PieceType) :-
+    write('Invalid Piece to Promote! '), nl,
+    input_promotion(PieceType).
+
+handle_promotion :-
+    (
+        check_promotion(Pawn),
+        input_promotion(PieceType),
+        promote(Pawn, PieceType)
+    ) ; true.
 
 game_loop :-
     game_over(0),
