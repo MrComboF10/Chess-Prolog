@@ -671,12 +671,8 @@ promote(Pawn, PieceTypeToPromote) :-
 
 % check_promotion(-Pawn)
 check_promotion(Pawn) :-
-    player(1),
-    piece_board(Pawn, _, 0), % top row
-    pawn(Pawn).
-check_promotion(Pawn) :-
-    player(2),
-    piece_board(Pawn, _, 7), % bottom row
+    piece_board(Pawn, _, Y),
+    (Y == 0 ; Y == 7),
     pawn(Pawn).
 
 stalemate :-
@@ -773,6 +769,7 @@ game_loop :-
     display_game,
     input_move(Move),
     move(Move),
+    handle_promotion,
     game_loop.
 
 play :-
