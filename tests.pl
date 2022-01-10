@@ -13,6 +13,21 @@ test_move(Move) :-
     move(Move),
     display_game.
 
+test_valid_black_pawn_two_steps_move :-
+    assert(scene(0)),
+    assert(player_scene(2, 0)),
+    assert(last_move_scene((0, 0, 0, 0), 0)),
+
+    % define pieces
+    assert(pawn_scene(b_p1, 0)),
+
+    % build board position
+    assert(piece_board_scene(b_p1, 0, 1, 0)),
+
+    %display_game,
+
+    move_valid((0, 1, 0, 3)).
+
 test_move_valid(Move) :-
     initial_state,
     move_valid(Move).

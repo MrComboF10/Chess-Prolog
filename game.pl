@@ -424,6 +424,16 @@ display_game :-
     display_player.
 
 % move(+Move)
+move((StartX, StartY, DestX, DestY)) :- % en passant
+    valid_en_passant((StartX, StartY, DestX, DestY)),
+    next_scene,
+    copy_scene,
+    piece_board(Piece, StartX, StartY),
+    remove_piece_board(StartX, StartY),
+    remove_piece_board(DestX, StartY),
+    add_piece_board(Piece, DestX, DestY),
+    next_player,
+    change_last_move((StartX, StartY, DestX, DestY)).
 move((StartX, StartY, DestX, DestY)) :-
     next_scene,
     copy_scene,
@@ -443,6 +453,12 @@ pawn_offset_signed(OffsetUnsigned, OffsetSigned) :-
     player(Player),
     opponent(Player, Opponent),
     OffsetSigned is OffsetUnsigned * (Player - Opponent).
+
+% pawn_row_index(+PawnRowIndex)
+pawn_row_index(6) :-
+    player(1).
+pawn_row_index(1) :-
+    player(2).
 
 % coords_valid(+PosX, +PosY)
 coords_valid(PosX, PosY) :-
@@ -476,6 +492,18 @@ move_direction_valid((StartX, StartY, DestX, DestY)) :-
     NewDestY is DestY - div((DestY - StartY), abs(DestY - StartY)),
     empty_tile(NewDestX, NewDestY),
     move_direction_valid((StartX, StartY, NewDestX, NewDestY)).
+
+valid_en_passant((StartX, StartY, DestX, DestY)) :-
+    piece_board(Piece, StartX, StartY),
+    pawn(Piece),
+    StartX \= DestX, StartY \= DestY,
+    pawn_offset_signed(1, Offset),
+    DestY is StartY + Offset, % verify move in y-axis
+    move_distance((StartX, StartY, DestX, DestY), (1, 1)), % verify move in x-axis
+    last_move((LastX, LastStartY, LastX, LastDestY)),
+    move_distance((LastX, LastStartY, LastX, LastDestY), (_, 2)), % verify if the last move of the opponent was two steps
+    DestX == LastX, % verify if the capture is towards the opponent piece column
+    StartY == LastDestY. % verify if the opponent pawn is next to player pawn in the beggining of movement
 
 % move_piece_valid_aux(+Move, +Piece)
 move_piece_valid_aux(Move, Piece) :-
@@ -511,8 +539,7 @@ move_piece_valid_aux((PosX, StartY, PosX, DestY), Piece) :- % move two steps
     StartY \= DestY,
     pawn_offset_signed(2, Offset),
     DestY is StartY + Offset, % verify if DestY is two steps
-    PlayerPawnsRowIndex is (8 + Offset) mod 8,
-    StartY == PlayerPawnsRowIndex,
+    pawn_row_index(StartY),
     pawn_offset_signed(1, MiddleOffset),
     MiddleY is StartY + MiddleOffset,
     empty_tile(PosX, MiddleY), % verify if there is no piece in first step
@@ -527,16 +554,8 @@ move_piece_valid_aux((StartX, StartY, DestX, DestY), Piece) :- % regular capture
     player(Player),
     opponent(Player, Opponent),
     player_piece(Opponent, OpponentPiece). % verify if the piece to capture is the opponent player
-move_piece_valid_aux((StartX, StartY, DestX, DestY), Piece) :- % capture en passant
-    pawn(Piece),
-    StartX \= DestX, StartY \= DestY,
-    pawn_offset_signed(1, Offset),
-    DestY is StartY + Offset, % verify move in y-axis
-    move_distance((StartX, StartY, DestX, DestY), (1, 1)), % verify move in x-axis
-    last_move((LastX, LastStartY, LastX, LastDestY)),
-    move_distance((LastX, LastStartY, LastX, LastDestY), (_, 2)), % verify if the last move of the opponent was two steps
-    DestX == LastX, % verify if the capture is towards the opponent piece column
-    StartY == LastDestY. % verify if the opponent pawn is next to player pawn in the beggining of movement
+move_piece_valid_aux(Move, _) :- % capture en passant
+    valid_en_passant(Move).
 
 % move_piece_valid(+Move)
 move_piece_valid((StartX, StartY, DestX, DestY)) :-
