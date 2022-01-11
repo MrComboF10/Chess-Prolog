@@ -435,6 +435,7 @@ move((StartX, StartY, DestX, DestY)) :- % en passant
     next_player,
     change_last_move((StartX, StartY, DestX, DestY)).
 move((StartX, StartY, DestX, DestY)) :-
+    \+ valid_en_passant((StartX, StartY, DestX, DestY)),
     next_scene,
     copy_scene,
     piece_board(Piece, StartX, StartY),
@@ -495,15 +496,19 @@ move_direction_valid((StartX, StartY, DestX, DestY)) :-
 
 valid_en_passant((StartX, StartY, DestX, DestY)) :-
     piece_board(Piece, StartX, StartY),
-    pawn(Piece),
-    StartX \= DestX, StartY \= DestY,
+    pawn(Piece), % verify if the start piece is a pawn
+    StartX \= DestX, StartY \= DestY, % verify if the movement is in diagonal
     pawn_offset_signed(1, Offset),
     DestY is StartY + Offset, % verify move in y-axis
     move_distance((StartX, StartY, DestX, DestY), (1, 1)), % verify move in x-axis
     last_move((LastX, LastStartY, LastX, LastDestY)),
-    move_distance((LastX, LastStartY, LastX, LastDestY), (_, 2)), % verify if the last move of the opponent was two steps
+    piece_board(OpponentPiece, LastX, LastDestY),
+    pawn(OpponentPiece), % verify if the attacked piece is a pawn
+    pawn_offset_signed(2, CurrentOffset),
+    LastOffset is 0 - CurrentOffset,
+    LastDestY is LastStartY + LastOffset, % verify if the last move of the opponent was two steps
     DestX == LastX, % verify if the capture is towards the opponent piece column
-    StartY == LastDestY. % verify if the opponent pawn is next to player pawn in the beggining of movement
+    StartY == LastDestY. % verify if the opponent pawn is next to player pawn in the begining of movement
 
 % move_piece_valid_aux(+Move, +Piece)
 move_piece_valid_aux(Move, Piece) :-
@@ -775,3 +780,13 @@ game_loop :-
 play :-
     initial_state,
     game_loop.
+
+/*
+
+TODO:
+- draw three times repetition
+- draw more than 50 moves
+- move with king and rook
+- input to show all valid moves
+
+*/
