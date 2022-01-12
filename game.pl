@@ -13,6 +13,15 @@
 :- dynamic bishop_scene/2.
 :- dynamic queen_scene/2.
 
+column_digit_letter(0, a).
+column_digit_letter(1, b).
+column_digit_letter(2, c).
+column_digit_letter(3, d).
+column_digit_letter(4, e).
+column_digit_letter(5, f).
+column_digit_letter(6, g).
+column_digit_letter(7, h).
+
 % player_color(?Player, ?Color)
 player_color(1, 'white').
 player_color(2, 'black').
@@ -495,7 +504,7 @@ move_direction_valid((StartX, StartY, DestX, DestY)) :-
     move_direction_valid((StartX, StartY, NewDestX, NewDestY)).
 
 % valid_en_passant(+Move)
-valid_en_passant((StartX, StartY, DestX, DestY)) :- % NOT WORKING! IT IS DOING WITH OTHER NON PAWNS PIECES!
+valid_en_passant((StartX, StartY, DestX, DestY)) :-
     piece_board(Piece, StartX, StartY),
     pawn(Piece), % verify if the start piece is a pawn
     StartX \= DestX, StartY \= DestY, % verify if the movement is in diagonal
@@ -701,6 +710,18 @@ game_over(Winner) :-
     player(Player),
     opponent(Player, Winner).
 
+move_coords_algebric((StartX, StartY, DestX, DestY), Algebric) :-
+    column_digit_letter(StartX, StartLetter),
+    column_digit_letter(DestX, DestLetter),
+    StartDigit is 8 - StartY,
+    DestDigit is 8 - DestY,
+    digit_atom(StartDigit, StartDigitAtom),
+    digit_atom(DestDigit, DestDigitAtom),
+    atom_concat(StartLetter, StartDigitAtom, StartAtom),
+    atom_concat(StartAtom, -, StartAtomWithDash),
+    atom_concat(DestLetter, DestDigitAtom, DestAtom),
+    atom_concat(StartAtomWithDash, DestAtom, Algebric).
+
 % valid_move_input_atom(+Input)
 valid_move_input_atom([LetterCode, NumberCode]) :-
     LetterCode >= 97, LetterCode =< 104, % verify letter
@@ -722,11 +743,18 @@ inputs_to_move(StartInput, DestInput, (StartX, StartY, DestX, DestY)) :-
     input_to_coords(StartInput, StartX, StartY),
     input_to_coords(DestInput, DestX, DestY).
 
+process_move_atom_input(h, Input) :-
+    write('HELLO!'), nl,
+    input_move_position(Input).
+process_move_atom_input(AtomInput, Input) :-
+    AtomInput \= h,
+    valid_move_input(AtomInput),
+    atom_codes(AtomInput, Input).
+
 % input_move_position(-Input)
 input_move_position(Input) :-
     read(AtomInput),
-    valid_move_input(AtomInput),
-    atom_codes(AtomInput, Input), !.
+    process_move_atom_input(AtomInput, Input), !.
 input_move_position(Input) :-
     write('Invalid Input! '), write(Input), nl,
     input_move_position(Input).
@@ -770,7 +798,7 @@ game_loop :-
     write('draw!').
 game_loop :-
     game_over(Winner),
-    ((Winner == 1) ; (Winner == 2)),
+    Winner \= 0,
     player_color(Winner, WinnerColor),
     write(WinnerColor), write(' wins!').
 game_loop :-
@@ -787,9 +815,11 @@ play :-
 /*
 
 TODO:
+- move algebric to coords
+- change input Start? Dest? to one line
+- create functor to display all valid moves
 - draw three times repetition
 - draw more than 50 moves
 - move with king and rook
-- input to show all valid moves
 
 */
