@@ -493,7 +493,8 @@ move_direction_valid((StartX, StartY, DestX, DestY)) :-
     empty_tile(NewDestX, NewDestY),
     move_direction_valid((StartX, StartY, NewDestX, NewDestY)).
 
-valid_en_passant((StartX, StartY, DestX, DestY)) :-
+% valid_en_passant(+Move)
+valid_en_passant((StartX, StartY, DestX, DestY)) :- % NOT WORKING! IT IS DOING WITH OTHER NON PAWNS PIECES!
     piece_board(Piece, StartX, StartY),
     pawn(Piece),
     StartX \= DestX, StartY \= DestY,
@@ -737,11 +738,13 @@ input_move(Move) :-
     write('Invalid Move!'), nl,
     input_move(Move).
 
+% valid_piece_type(+PieceType)
 valid_piece_type(q).
 valid_piece_type(r).
 valid_piece_type(h).
 valid_piece_type(b).
 
+% input_promotion(-PieceType)
 input_promotion(PieceType) :-
     write('(q, r, h, b)?'), nl,
     read(PieceType),
