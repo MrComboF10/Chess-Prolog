@@ -718,9 +718,29 @@ move_coords_algebric((StartX, StartY, DestX, DestY), Algebric) :-
     digit_atom(StartDigit, StartDigitAtom),
     digit_atom(DestDigit, DestDigitAtom),
     atom_concat(StartLetter, StartDigitAtom, StartAtom),
-    atom_concat(StartAtom, -, StartAtomWithDash),
     atom_concat(DestLetter, DestDigitAtom, DestAtom),
-    atom_concat(StartAtomWithDash, DestAtom, Algebric).
+    atom_concat(StartAtom, DestAtom, Algebric).
+
+
+move_algebric_coords(Algebric, (StartX, StartY, DestX, DestY)) :-
+    atom_concat(StartAtom, DestAtom, Algebric),
+    atom_length(StartAtom, 2),
+    atom_concat(StartLetter, StartDigitAtom, StartAtom),
+    atom_concat(DestLetter, DestDigitAtom, DestAtom),
+    atom_digit(StartDigitAtom, StartDigit),
+    atom_digit(DestDigitAtom, DestDigit),
+    StartY is 8 - StartDigit,
+    DestY is 8 - DestDigit,
+    column_digit_letter(StartX, StartLetter),
+    column_digit_letter(DestX, DestLetter).
+
+display_valid_moves_algebric([Move]) :-
+    move_coords_algebric(Move, Algebric),
+    write(Algebric), nl.
+display_valid_moves_algebric([Move|TMoves]) :-
+    move_coords_algebric(Move, Algebric),
+    write(Algebric), write(', '),
+    display_valid_moves_algebric(TMoves).
 
 % valid_move_input_atom(+Input)
 valid_move_input_atom([LetterCode, NumberCode]) :-
@@ -744,7 +764,8 @@ inputs_to_move(StartInput, DestInput, (StartX, StartY, DestX, DestY)) :-
     input_to_coords(DestInput, DestX, DestY).
 
 process_move_atom_input(h, Input) :-
-    write('HELLO!'), nl,
+    valid_moves(ListOfMoves),
+    display_valid_moves_algebric(ListOfMoves),
     input_move_position(Input).
 process_move_atom_input(AtomInput, Input) :-
     AtomInput \= h,

@@ -10,3 +10,9 @@ digit_atom(Digit, Atom) :-
     Digit =< 9,
     DigitCode is 48 + Digit,
     atom_codes(Atom, [DigitCode]).
+
+atom_digit(Atom, Digit) :-
+    atom_codes(Atom, [DigitCode]),
+    Digit is DigitCode - 48,
+    Digit >= 0,
+    Digit =< 9.
